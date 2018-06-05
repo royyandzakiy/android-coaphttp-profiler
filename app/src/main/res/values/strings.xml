@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Showdown CoAP HTTP</string>
+    <string name="app_name">eFishery CoAP HTTP</string>
     <string name="title_http">HTTP</string>
     <string name="title_coap">CoAP</string>
 </resources>

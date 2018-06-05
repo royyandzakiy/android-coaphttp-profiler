@@ -77,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
                     // change values
                     packetLossValue.setText("clicked");
                     responseTimeValue.setText("clicked");
-                    cpuProcessingValue.setText("clicked");
-                    payloadSizeValue.setText("clicked");
+                    cpuProcessingValue.setText("TBD");
+                    payloadSizeValue.setText("TBD");
                 }
             }
         });

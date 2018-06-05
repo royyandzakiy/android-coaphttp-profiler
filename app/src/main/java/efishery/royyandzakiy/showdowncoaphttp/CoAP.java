@@ -8,18 +8,35 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+
+import de.uzl.itm.ncoap.application.client.ClientCallback;
+import de.uzl.itm.ncoap.application.client.CoapClient;
+import de.uzl.itm.ncoap.communication.blockwise.BlockSize;
+import de.uzl.itm.ncoap.communication.dispatching.Token;
+import de.uzl.itm.ncoap.message.CoapMessage;
+import de.uzl.itm.ncoap.message.CoapRequest;
+import de.uzl.itm.ncoap.message.CoapResponse;
+import de.uzl.itm.ncoap.message.MessageType;
+import de.uzl.itm.ncoap.message.options.ContentFormat;
 
 public class CoAP {
     // FOR PUT ::
 
-    public class RDUData extends AsyncTask<Void,Void,Void> {
+    CoapClient coapClient;
+    String rduserverName = "coap.me", serverName = "coap.me";
+    int portNumber = 5683;
 
+    public void showToast(String msg) {
+        // do something
+    }
+
+    public class RDUData extends AsyncTask<Void,Void,Void> {
         @Override    protected Void doInBackground(Void... params) {
             try {
                 CoapClient coapClient = new CoapClient();
                 //Create socket address from server name and port
-                InetSocketAddress remoteEndpoint = new InetSocketAddress
-                        (InetAddress.getByName(rduserverName), portNumber);
+                InetSocketAddress remoteEndpoint = new InetSocketAddress(InetAddress.getByName(rduserverName), portNumber);
 
                 URI serviceURI = new URI("coap", null, serverName,
                         remoteEndpoint.getPort(), "<the path of uri>", null, null);
@@ -54,8 +71,7 @@ public class CoAP {
                 coapClient = new CoapClient();
 
                 //Create socket address from server name and port
-                final InetSocketAddress remoteEndpoint = new InetSocketAddress(
-                        InetAddress.getByName(serverName), portNumber);
+                final InetSocketAddress remoteEndpoint = new InetSocketAddress(InetAddress.getByName(serverName), portNumber);
 
                 URI serviceURI = new URI("coap", null, serverName, remoteEndpoint.getPort(),
                         "/weighing/scale", null, null);
@@ -67,8 +83,8 @@ public class CoAP {
                     @Override
                     public void processCoapResponse(CoapResponse coapResponse) {
                         showToast("Weight Data :: " + coapResponse.getContent().toString(CoapMessage.CHARSET));
-                   /* coapRequest.setObserve(0);
- coapResponse.getObserve();*/
+                   // coapRequest.setObserve(0);
+ coapResponse.getObserve();
                         boolean isObs = coapRequest.isObservationRequest();
                         Token token = coapResponse.getToken();
 
@@ -100,7 +116,7 @@ public class CoAP {
                     @Override
                     public void processTransmissionTimeout(){
                     }
-                    @Override
+                    /*@Override
                     public void processResponseBlockReceived(final long receivedLength, final long expectedLength) {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -108,7 +124,7 @@ public class CoAP {
                                 String expected = expectedLength == -1 ? "UNKNOWN" : ("" + expectedLength);
                             }
                         });
-                    }
+                    }//*/
                     @Override
                     public void processMiscellaneousError(final String description) {
                     }
@@ -120,7 +136,7 @@ public class CoAP {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
-            //   coapClient.shutdown();        return null;
+            coapClient.shutdown();        return null;
         }
     }
 }

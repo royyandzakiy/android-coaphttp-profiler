@@ -18,9 +18,18 @@ android {
     }
 }
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://maven.itm.uni-luebeck.de/repository/snapshots"
+    }
+}
+
 dependencies {
     // tambahan sendiri
     implementation 'com.mcxiaoke.volley:library:1.0.19'
+    implementation 'de.uzl.itm:ncoap-core:1.8.3-SNAPSHOT'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
