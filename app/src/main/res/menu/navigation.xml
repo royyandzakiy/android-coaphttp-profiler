@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_action_http"
+        android:title="@string/title_http" />
+
+    <item
+        android:id="@+id/navigation_notifications"
+        android:icon="@drawable/ic_action_coap"
+        android:title="@string/title_coap" />
+
+</menu>

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fafafa"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="70dp"
+                android:src="@drawable/efishery_logo" />
+
+            <Button
+                android:id="@+id/send"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#26b99a"
+                android:padding="20dp"
+                android:text="Send"
+                android:textColor="@android:color/white"
+                android:textSize="30dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="right"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:text="Press send!"
+                android:textAlignment="center"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/requestType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="HTTP Request"
+                android:textAlignment="center"
+                android:textColor="#26b99a"
+                android:textSize="20dp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/packetLoss"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Packet Loss"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="15dp" />
+
+                <TextView
+                    android:id="@+id/packetLossValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/responseTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Response Time"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="15dp" />
+
+                <TextView
+                    android:id="@+id/responseTimeValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/cpuProcessing"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="CPU Processing"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="15dp" />
+
+                <TextView
+                    android:id="@+id/cpuProcessingValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/payloadSize"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Payload Size"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="15dp" />
+
+                <TextView
+                    android:id="@+id/payloadSizeValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight"
+                    android:textSize="15dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/response"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Response :"
+                    android:textColor="#26b99a" />
+
+                <TextView
+                    android:id="@+id/responseSuccessValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight" />
+
+                <TextView
+                    android:id="@+id/responseFailValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#fafafa"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/navigation" />
+
+</android.support.constraint.ConstraintLayout>
