@@ -24,6 +24,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static java.sql.Types.NULL;
+
 public class MainActivity extends AppCompatActivity {
 
     public class ReqResData {
@@ -200,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         stopwatch.stop();
         clicked = false;
         countSuccess = 0; countFail = 0;
+        durasiMin = NULL; durasiMax = NULL; durasiAvg = NULL; durasiTemp = NULL; durasiTotal = 0;
     }
 
     protected void resetAll() {
