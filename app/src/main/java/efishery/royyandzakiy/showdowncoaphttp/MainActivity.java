@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,9 +20,15 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import de.uzl.itm.ncoap.application.client.CoapClient;
+import de.uzl.itm.ncoap.message.CoapMessage;
+import de.uzl.itm.ncoap.message.CoapResponse;
+import de.uzl.itm.ncoap.message.options.OpaqueOptionValue;
+import de.uzl.itm.ncoap.message.options.UintOptionValue;
 
 import static java.sql.Types.NULL;
 
@@ -30,8 +38,11 @@ public class MainActivity extends AppCompatActivity {
         public int id;
         public float timesend;
         public float timereply;
+        public float duration;
         public boolean success;
     }
+
+    long starttime;
 
     ArrayList<ReqResData> listReqResData = new ArrayList<ReqResData>();
     private RequestQueue queue;
@@ -76,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
         initVariables();
 
+        starttime = System.currentTimeMillis();
+
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
@@ -83,11 +96,7 @@ public class MainActivity extends AppCompatActivity {
                     // send Request
                     isProcessing = true;
 
-                    Log.d("DEBUG::GAK PROCESSING::","START_sendrequest");
-
                     sendRequest();
-
-                    Log.d("DEBUG::GAK PROCESSING::","END_sendrequest");
 
                     Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
                     status.setText("requesting...");
@@ -116,16 +125,16 @@ public class MainActivity extends AppCompatActivity {
             if (type == "http") {
                 sendHttpRequest(i);
             } else if (type == "coap") {
-                sendCoapRequest();
-                if (i == countRequest-1) requestDone(); // bruteforce requestDone()
+                sendCoapRequest(i);
+                //Log.d("DEBUG::sendRequest::","request ke-" + i + " terkirim!");
+                //if (i == countRequest-1) requestDone(); // bruteforce requestDone()
             }
         }
     }
 
-    protected void sendCoapRequest() {
+    protected void sendCoapRequest(int n) {
         // do something
-        // new SendRequest(this).execute();
-        requestDone();
+        new SendCoapRequest(this).execute();
     }
 
     protected void sendHttpRequest(int n) {
@@ -135,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         final ReqResData temp = new ReqResData();
         temp.id = n;
 
-        Log.d("DEBUG::GAK_PROCESSING::","sendrequest_sendHTTPRequest - " + n);
+        //Log.d("DEBUG::GAK_PROCESSING::","sendrequest_sendHTTPRequest - " + n);
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -158,7 +167,8 @@ public class MainActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 // responseSuccessValue.setText("That didn't work!");
                 responseFailValue.setText("Fail count: "+ ++countFail);
-                temp.timereply = stopwatch.getElapsedTimeSecs();
+                //temp.timereply = stopwatch.getElapsedTimeSecs();
+                temp.timereply = System.currentTimeMillis();
                 temp.success = false;
                 listReqResData.add(temp);
 
@@ -170,18 +180,19 @@ public class MainActivity extends AppCompatActivity {
 
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
-        temp.timesend = stopwatch.getElapsedTimeSecs();
+        //temp.timesend = stopwatch.getElapsedTimeSecs();
+        temp.timesend = System.currentTimeMillis();
     }
 
     protected void requestDone() {
+        Log.d("DEBUG::","MainActivity::requestDone");
+        Log.d("DEBUG::","MainActivity::listReqResData.size() = " + listReqResData.size());
         //=== Get Durasi
         for (int i=0; i<listReqResData.size(); i++) {
             durasiTemp = listReqResData.get(i).timereply - listReqResData.get(i).timesend; // Milli
             if (durasiMax < durasiTemp) durasiMax = durasiTemp;
             if (durasiMin > durasiTemp) durasiMin = durasiTemp;
             durasiTotal += durasiTemp;
-
-            Log.d("DEBUG::", "durasiTemp ke-(" + i + "): " + String.valueOf(durasiTemp) + "; send: " + listReqResData.get(i).timesend + "; reply: " + listReqResData.get(i).timereply);
         }
         durasiAvg = (float) durasiTotal / listReqResData.size();
 
@@ -265,4 +276,145 @@ public class MainActivity extends AppCompatActivity {
         return this.clientApplication;
     }
 
+    public void processResponse(final CoapResponse coapResponse, final URI serviceURI, final long duration) {
+        ReqResData temp = new ReqResData();
+        temp.duration = duration;
+        listReqResData.add(temp);
+
+        // MUNGKIN FAIL DISINI
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                long block2Num = coapResponse.getBlock2Number();
+                String text = "Response received";
+                if (block2Num != UintOptionValue.UNDEFINED) {
+                    text += " (" + block2Num + " blocks in " + duration + " ms)";
+                } else {
+                    text += " (after " + duration + " ms)";
+                }
+
+                totalRequestTimeValue.setText(text);
+
+                //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+
+                responseReceived(serviceURI, coapResponse);
+                //Log.d("DEBUG::","response ke-" + countFail + ", running");
+            }
+        });
+    }
+
+    public void responseReceived(URI uri, CoapResponse coapResponse){
+        ++countFail;
+        Log.d("DEBUG::","MainActivity::responseReceived::countFail = " + countFail + "; stopwatch = " + stopwatch.getElapsedTimeSecs());
+        if (countFail == countRequest) {
+            requestDone();
+        }
+        //Log.d("DEBUG::","MainActivity::responseReceived countSuccess = " + countSuccess);
+        /*
+        TextView txtResponse = (TextView) getActivity().findViewById(R.id.txt_response_payload);
+        txtResponse.setText("");
+        txtResponse.setText(coapResponse.getContent().toString(CoapMessage.CHARSET));
+
+        //Response Type
+        TextView txtResponseType = (TextView) getActivity().findViewById(R.id.txt_type_response);
+        txtResponseType.setText(coapResponse.getMessageTypeName());
+
+        //ETAG Option
+        TableRow etagRow = (TableRow) clientActivity.findViewById(R.id.tabrow_etag_response);
+        byte[] etagValue = coapResponse.getEtag();
+        if(etagValue != null) {
+            etagRow.setVisibility(View.VISIBLE);
+            ((TextView) clientActivity.findViewById(R.id.txt_etag_response)).setText(
+                    OpaqueOptionValue.toHexString(etagValue)
+            );
+        } else {
+            etagRow.setVisibility(View.GONE);
+        }
+
+        //Observe Option
+        TableRow observeRow = (TableRow) clientActivity.findViewById(R.id.tabrow_observe_response);
+        long observeValue = coapResponse.getObserve();
+        if(observeValue != UintOptionValue.UNDEFINED){
+            observeRow.setVisibility(View.VISIBLE);
+            ((TextView) clientActivity.findViewById(R.id.txt_observe_response)).setText("" + observeValue);
+        } else {
+            observeRow.setVisibility(View.GONE);
+        }
+
+        //Location-URI Options
+        try {
+            URI locationURI = coapResponse.getLocationURI();
+            TableRow locationPathRow = (TableRow) clientActivity.findViewById(R.id.tabrow_location_path_response);
+            TableRow locationQueryRow = (TableRow) clientActivity.findViewById(R.id.tabrow_location_query_response);
+
+            if(locationURI != null) {
+                //Location-Path Option
+                String locationPath = locationURI.getPath();
+                if(locationPath != null) {
+                    locationPathRow.setVisibility(View.VISIBLE);
+                    ((TextView) clientActivity.findViewById(R.id.txt_location_path_response)).setText(locationPath);
+                } else {
+                    locationPathRow.setVisibility(View.GONE);
+                }
+
+                //Location-Query Option
+                String locationQuery = locationURI.getQuery();
+                if(locationQuery != null) {
+                    locationQueryRow.setVisibility(View.VISIBLE);
+                    ((TextView) clientActivity.findViewById(R.id.txt_location_query_response)).setText(locationQuery);
+                } else {
+                    locationQueryRow.setVisibility(View.GONE);
+                }
+            } else {
+                locationPathRow.setVisibility(View.GONE);
+                locationQueryRow.setVisibility(View.GONE);
+            }
+        } catch(URISyntaxException ex) {
+            String message = "ERROR (Malformed 'Location' Options): " + ex.getMessage();
+            Toast.makeText(this.clientActivity, message, Toast.LENGTH_LONG).show();
+        }
+
+        //Content Format Option
+        TableRow contentFormatRow = (TableRow) clientActivity.findViewById(R.id.tabrow_content_format_response);
+        long contentFormatValue = coapResponse.getContentFormat();
+        if(contentFormatValue != UintOptionValue.UNDEFINED){
+            contentFormatRow.setVisibility(View.VISIBLE);
+            ((TextView) clientActivity.findViewById(R.id.txt_contenttype_response)).setText("" + contentFormatValue);
+        } else {
+            contentFormatRow.setVisibility(View.GONE);
+        }
+
+        //Max-Age Option
+        long maxAgeValue = coapResponse.getMaxAge();
+        ((TextView) clientActivity.findViewById(R.id.txt_max_age_response)).setText("" + maxAgeValue);
+
+        //Block2 Option
+        long block2Number = coapResponse.getBlock2Number();
+        if(block2Number != UintOptionValue.UNDEFINED){
+            clientActivity.findViewById(R.id.tabrow_block2_response).setVisibility(View.VISIBLE);
+            ((TextView) clientActivity.findViewById(R.id.txt_block2_response)).setText(
+                    "No: " + block2Number + " | SZX: " + coapResponse.getBlock2Szx()
+            );
+        } else {
+            clientActivity.findViewById(R.id.tabrow_block2_response).setVisibility(View.GONE);
+        }
+
+        //TODO: Size1 Option
+        clientActivity.findViewById(R.id.tabrow_size1_response).setVisibility(View.GONE);
+
+
+        //Response Code
+        TextView txtResponseCode = (TextView) clientActivity.findViewById(R.id.txt_code_response);
+        int messageCode = coapResponse.getMessageCode();
+        txtResponseCode.setText("" + ((messageCode >>> 5) & 7) + "." + String.format("%02d", messageCode & 31));
+
+
+        if(!coapResponse.isUpdateNotification()){
+            RadioButton radStopObservation = (RadioButton) clientActivity.findViewById(R.id.rad_stop_observation);
+            radStopObservation.setChecked(true);
+            radStopObservation.setEnabled(false);
+            radStopObservation.setVisibility(View.INVISIBLE);
+        }
+        //*/
+    }
 }

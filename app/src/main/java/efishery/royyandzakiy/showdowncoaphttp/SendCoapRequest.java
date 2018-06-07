@@ -2,12 +2,7 @@ package efishery.royyandzakiy.showdowncoaphttp;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.widget.AutoCompleteTextView;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.Spinner;
-import android.widget.Toast;
+import android.util.Log;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -21,7 +16,7 @@ import de.uzl.itm.ncoap.message.CoapRequest;
 import de.uzl.itm.ncoap.message.CoapResponse;
 import de.uzl.itm.ncoap.message.MessageType;
 
-public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCallback> {
+public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.SpitfirefoxCallback> {
     private ProgressDialog progressDialog;
 
     private String serverName, localUri, acceptedFormats, payloadFormat, payload, ifMatch, etags;
@@ -32,7 +27,7 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
 
     private MainActivity activity;
 
-    public void SendRequest(MainActivity activity){
+    public SendCoapRequest(MainActivity activity){
         this.activity = activity;
         this.coapClient = activity.getClientApplication();
     }
@@ -41,7 +36,7 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
     @Override
     protected void onPreExecute(){
 
-        this.serverName = "";
+        this.serverName = "coap.me";
 
         try {
             this.portNumber = 5683;
@@ -53,7 +48,7 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
         this.confirmable = false;
         this.observe = false;
         this.acceptedFormats = "";
-        this.payloadFormat = "50";
+        this.payloadFormat = "";
         this.payload = "";
         this.ifMatch = "";
         this.etags = "";
@@ -62,7 +57,7 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
         this.block1Size = this.getBlock1Size();
 
         //progressDialog.setMessage(this.activity.getResources().getString(R.string.waiting));
-        progressDialog.show();
+        //progressDialog.show();
     }
 
     private BlockSize getBlock2Size() {
@@ -131,13 +126,13 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
             URI serviceURI = new URI("coap", null, serverName, remoteEndpoint.getPort(), localUri, null, null);
 
             //Create initial CoAP request
-            CoapRequest coapRequest = new CoapRequest(messageType, method[0].intValue(), serviceURI);
+            CoapRequest coapRequest = new CoapRequest(messageType, 1, serviceURI);
 
             //Set if-match option values (if any)
             try {
                 coapRequest.setIfMatch(getOpaqueOptionValues(this.ifMatch));
             } catch (IllegalArgumentException ex) {
-                this.progressDialog.dismiss();
+                //this.progressDialog.dismiss();
                 showLongToast("Malformed IF-MATCH: " + ex.getMessage());
                 return null;
             }
@@ -147,14 +142,14 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
             try {
                 coapRequest.setEtags(getOpaqueOptionValues(this.etags));
             } catch (IllegalArgumentException ex) {
-                this.progressDialog.dismiss();
+                //this.progressDialog.dismiss();
                 showLongToast("Malformed ETAG: " + ex.getMessage());
                 return null;
             }
 
             //Set observe option (for GET only)
             if(observe && method[0] != 1) {
-                this.progressDialog.dismiss();
+                //this.progressDialog.dismiss();
                 showLongToast("Use GET for observation!");
                 return null;
             } else if (observe) {
@@ -185,7 +180,7 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
 
             //Set payload and payload related options in request (if any)
             if(!("".equals(this.payload)) && "".equals(this.payloadFormat)){
-                this.progressDialog.dismiss();
+                //this.progressDialog.dismiss();
                 showLongToast("No Content Type for payload defined!");
                 return null;
             } else if (!("".equals(payloadFormat))){
@@ -198,10 +193,11 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
                     serviceURI, coapRequest.isObservationRequest()
             );
             this.coapClient.sendCoapRequest(coapRequest, remoteEndpoint, clientCallback);
-
             return clientCallback;
         } catch (final Exception e) {
-            this.progressDialog.dismiss();
+            //this.progressDialog.dismiss();
+            Log.d("DEBUG::","SendCoapRequest::doInBackground catchError");
+            Log.d("DEBUG::",e.getMessage());
             showLongToast(e.getMessage());
             return null;
         }
@@ -236,10 +232,9 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
         @Override
         public void processCoapResponse(CoapResponse coapResponse) {
             long duration = System.currentTimeMillis() - startTime;
-            progressDialog.dismiss();
-            //activity.processResponse(coapResponse, this.serviceURI, duration);
-            // do something here
-            // ...
+            //progressDialog.dismiss();
+            //Log.d("DEBUG::","processCoapResponse::duration " + duration + " milllis");
+            activity.processResponse(coapResponse, this.serviceURI, duration);
         }
 
         @Override
@@ -249,13 +244,13 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
 
         @Override
         public void processReset(){
-            progressDialog.dismiss();
+            //progressDialog.dismiss();
             showLongToast("RST received from Server!");
         }
 
         @Override
         public void processTransmissionTimeout(){
-            progressDialog.dismiss();
+            //progressDialog.dismiss();
             showLongToast("Transmission timed out!");
         }
 
@@ -279,7 +274,7 @@ public class SendRequest extends AsyncTask<Long, Void, SendRequest.SpitfirefoxCa
 
         @Override
         public void processMiscellaneousError(final String description) {
-            progressDialog.dismiss();
+            //progressDialog.dismiss();
             showLongToast("ERROR: " + description + "!");
         }
 
