@@ -24,6 +24,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import de.uzl.itm.ncoap.application.client.CoapClient;
+
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     ArrayList<ReqResData> listReqResData = new ArrayList<ReqResData>();
+    final RequestQueue queue = Volley.newRequestQueue(this);
 
     Button send;
     TextView mRequestType, 
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     String type = "http";
     float durasiAvg, durasiMax = -1, durasiMin = 9999, durasiTotal = 0, durasiTemp;
 
+    private CoapClient clientApplication;
     Stopwatch stopwatch;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -104,8 +108,9 @@ public class MainActivity extends AppCompatActivity {
             if (type == "http") {
                 sendHttpRequest(i);
             } else if (type == "coap") {
-                sendCoapRequest();
-                if (i == countRequest-1) requestDone(); // bruteforce requestDone()
+                new SendRequest(this).execute();
+                //sendCoapRequest();
+                //if (i == countRequest-1) requestDone(); // bruteforce requestDone()
             }
         }
     }
@@ -117,12 +122,11 @@ public class MainActivity extends AppCompatActivity {
 
     protected void sendHttpRequest(int n) {
         // Instantiate the RequestQueue.
-        final RequestQueue queue = Volley.newRequestQueue(this);
         String url ="https://sakernas-api.herokuapp.com/pemutakhiran/5a8239f92cece14688a14f2c";
 
         final ReqResData temp = new ReqResData();
         temp.id = n;
-        temp.timesend = stopwatch.getElapsedTimeSecs();
+        temp.timesend = stopwatch.getElapsedTimeMili();
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -132,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
                         // Display response
                         // responseSuccessValue.setText(response);
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
-                        queue.stop();
                         temp.timereply = stopwatch.getElapsedTimeMili();
                         temp.success = true;
                         listReqResData.add(temp);
@@ -146,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 // responseSuccessValue.setText("That didn't work!");
                 responseFailValue.setText("Fail count: "+ ++countFail);
-                queue.stop();
                 temp.timereply = stopwatch.getElapsedTimeMili();
                 temp.success = false;
                 listReqResData.add(temp);
@@ -200,9 +202,11 @@ public class MainActivity extends AppCompatActivity {
 
     protected void resetVars() {
         stopwatch.stop();
+        queue.stop();
         clicked = false;
         countSuccess = 0; countFail = 0;
         durasiMin = NULL; durasiMax = NULL; durasiAvg = NULL; durasiTemp = NULL; durasiTotal = 0;
+        listReqResData.clear();
     }
 
     protected void resetAll() {
@@ -242,7 +246,12 @@ public class MainActivity extends AppCompatActivity {
         responseMessage = (TextView) findViewById(R.id.responseMessage);
         status = (TextView) findViewById(R.id.status);
 
+        this.clientApplication = new CoapClient();
         stopwatch = new Stopwatch();
+    }
+
+    public CoapClient getClientApplication(){
+        return this.clientApplication;
     }
 
 }
