@@ -1,5 +1,6 @@
 package efishery.royyandzakiy.showdowncoaphttp;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -156,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Add the request to the RequestQueue.
+        stringRequest.setTag("sendHttpRequest");
         queue.add(stringRequest);
     }
 
@@ -196,7 +198,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void resetVars() {
+        queue.cancelAll("sendHttpRequest");
         queue.stop();
+        queue.start();
         isProcessing = false;
         countSuccess = 0; countFail = 0;
         durasiMin = 9999999; durasiMax = -1; durasiAvg = NULL; durasiTemp = NULL; durasiTotal = 0;
@@ -257,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                 //    text += " (after " + duration + " ms)";
                 //}
 
-                String text = duration + " ms)";
+                String text = duration + " ms";
                 totalRequestTimeValue.setText(text);
 
                 //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
