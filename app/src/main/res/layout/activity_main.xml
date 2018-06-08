@@ -179,86 +179,6 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/cpuProcessing"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Avg/Max/Min CPU Processing"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="15dp" />
-
-                <TextView
-                    android:id="@+id/cpuProcessingValue"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:text="null"
-                    android:textColor="?android:attr/colorActivatedHighlight"
-                    android:textSize="15dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/contentLength"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Content Length"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="15dp" />
-
-                <TextView
-                    android:id="@+id/contentLengthValue"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:text="null"
-                    android:textColor="?android:attr/colorActivatedHighlight"
-                    android:textSize="15dp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/totalContentLength"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Total Content Length"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="15dp" />
-
-                <TextView
-                    android:id="@+id/totalContentLengthValue"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:text="null"
-                    android:textColor="?android:attr/colorActivatedHighlight"
-                    android:textSize="15dp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
                 android:layout_weight="1"
@@ -282,13 +202,6 @@
 
                 <TextView
                     android:id="@+id/responseFailValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="null"
-                    android:textColor="?android:attr/colorActivatedHighlight" />
-
-                <TextView
-                    android:id="@+id/responseMessage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="null"

@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
         // COMPONENTS
     public Button send;
     public TextView mRequestType,
-            totalRequestValue, packetLossValue, totalRequestTimeValue, requestTimeValue, cpuProcessingValue, contentLengthValue, totalContentLengthValue,
-            responseSuccessValue, responseFailValue, responseMessage, status;
+            totalRequestValue, packetLossValue, totalRequestTimeValue, requestTimeValue,
+            responseSuccessValue, responseFailValue, status;
 
     // SYSTEM
     private long startTime;
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private CoapClient clientApplication;
     private String type = "http";
     private boolean isProcessing = false;
-    private int countSuccess = 0, countFail = 0, countRequest = 10;
+    private int countSuccess = 0, countFail = 0, countRequest = 151;
     private float durasiAvg;
     private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
 
@@ -93,12 +93,9 @@ public class MainActivity extends AppCompatActivity {
                     packetLossValue.setText("isProcessing");
                     totalRequestTimeValue.setText("isProcessing");
                     requestTimeValue.setText("isProcessing");
-                    cpuProcessingValue.setText("TBD");
-                    contentLengthValue.setText("TBD");
 
                     responseSuccessValue.setText("isProcessing");
                     responseFailValue.setText("isProcessing");
-                    responseMessage.setText("isProcessing");
                 }
             }
         });
@@ -208,9 +205,6 @@ public class MainActivity extends AppCompatActivity {
         packetLossValue.setText("null");
         totalRequestTimeValue.setText("null");
         requestTimeValue.setText("null");
-        cpuProcessingValue.setText("null");
-        contentLengthValue.setText("null");
-        totalContentLengthValue.setText("null");
 
         status.setText("Press send!");
 
@@ -229,13 +223,9 @@ public class MainActivity extends AppCompatActivity {
         totalRequestTimeValue = (TextView) findViewById(R.id.totalRequestTimeValue);
         packetLossValue = (TextView) findViewById(R.id.packetLossValue);
         requestTimeValue = (TextView) findViewById(R.id.requestTimeValue);
-        cpuProcessingValue = (TextView) findViewById(R.id.cpuProcessingValue);
-        contentLengthValue = (TextView) findViewById(R.id.contentLengthValue);
-        totalContentLengthValue = (TextView) findViewById(R.id.totalContentLengthValue);
 
         responseSuccessValue = (TextView) findViewById(R.id.responseSuccessValue);
         responseFailValue = (TextView) findViewById(R.id.responseFailValue);
-        responseMessage = (TextView) findViewById(R.id.responseMessage);
         status = (TextView) findViewById(R.id.status);
 
         this.clientApplication = new CoapClient();
@@ -254,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                long block2Num = coapResponse.getBlock2Number();
+                long block2Num = coapResponse.getBlock2Number(); // block2Num itu utk apa?
                 String text = "";
                 //text = "Response received";
                 //if (block2Num != UintOptionValue.UNDEFINED) {
@@ -277,112 +267,6 @@ public class MainActivity extends AppCompatActivity {
         if ((countSuccess + countFail) == countRequest) {
             requestDone();
         }
-        /*
-        TextView txtResponse = (TextView) getActivity().findViewById(R.id.txt_response_payload);
-        txtResponse.setText("");
-        txtResponse.setText(coapResponse.getContent().toString(CoapMessage.CHARSET));
-
-        //Response Type
-        TextView txtResponseType = (TextView) getActivity().findViewById(R.id.txt_type_response);
-        txtResponseType.setText(coapResponse.getMessageTypeName());
-
-        //ETAG Option
-        TableRow etagRow = (TableRow) clientActivity.findViewById(R.id.tabrow_etag_response);
-        byte[] etagValue = coapResponse.getEtag();
-        if(etagValue != null) {
-            etagRow.setVisibility(View.VISIBLE);
-            ((TextView) clientActivity.findViewById(R.id.txt_etag_response)).setText(
-                    OpaqueOptionValue.toHexString(etagValue)
-            );
-        } else {
-            etagRow.setVisibility(View.GONE);
-        }
-
-        //Observe Option
-        TableRow observeRow = (TableRow) clientActivity.findViewById(R.id.tabrow_observe_response);
-        long observeValue = coapResponse.getObserve();
-        if(observeValue != UintOptionValue.UNDEFINED){
-            observeRow.setVisibility(View.VISIBLE);
-            ((TextView) clientActivity.findViewById(R.id.txt_observe_response)).setText("" + observeValue);
-        } else {
-            observeRow.setVisibility(View.GONE);
-        }
-
-        //Location-URI Options
-        try {
-            URI locationURI = coapResponse.getLocationURI();
-            TableRow locationPathRow = (TableRow) clientActivity.findViewById(R.id.tabrow_location_path_response);
-            TableRow locationQueryRow = (TableRow) clientActivity.findViewById(R.id.tabrow_location_query_response);
-
-            if(locationURI != null) {
-                //Location-Path Option
-                String locationPath = locationURI.getPath();
-                if(locationPath != null) {
-                    locationPathRow.setVisibility(View.VISIBLE);
-                    ((TextView) clientActivity.findViewById(R.id.txt_location_path_response)).setText(locationPath);
-                } else {
-                    locationPathRow.setVisibility(View.GONE);
-                }
-
-                //Location-Query Option
-                String locationQuery = locationURI.getQuery();
-                if(locationQuery != null) {
-                    locationQueryRow.setVisibility(View.VISIBLE);
-                    ((TextView) clientActivity.findViewById(R.id.txt_location_query_response)).setText(locationQuery);
-                } else {
-                    locationQueryRow.setVisibility(View.GONE);
-                }
-            } else {
-                locationPathRow.setVisibility(View.GONE);
-                locationQueryRow.setVisibility(View.GONE);
-            }
-        } catch(URISyntaxException ex) {
-            String message = "ERROR (Malformed 'Location' Options): " + ex.getMessage();
-            Toast.makeText(this.clientActivity, message, Toast.LENGTH_LONG).show();
-        }
-
-        //Content Format Option
-        TableRow contentFormatRow = (TableRow) clientActivity.findViewById(R.id.tabrow_content_format_response);
-        long contentFormatValue = coapResponse.getContentFormat();
-        if(contentFormatValue != UintOptionValue.UNDEFINED){
-            contentFormatRow.setVisibility(View.VISIBLE);
-            ((TextView) clientActivity.findViewById(R.id.txt_contenttype_response)).setText("" + contentFormatValue);
-        } else {
-            contentFormatRow.setVisibility(View.GONE);
-        }
-
-        //Max-Age Option
-        long maxAgeValue = coapResponse.getMaxAge();
-        ((TextView) clientActivity.findViewById(R.id.txt_max_age_response)).setText("" + maxAgeValue);
-
-        //Block2 Option
-        long block2Number = coapResponse.getBlock2Number();
-        if(block2Number != UintOptionValue.UNDEFINED){
-            clientActivity.findViewById(R.id.tabrow_block2_response).setVisibility(View.VISIBLE);
-            ((TextView) clientActivity.findViewById(R.id.txt_block2_response)).setText(
-                    "No: " + block2Number + " | SZX: " + coapResponse.getBlock2Szx()
-            );
-        } else {
-            clientActivity.findViewById(R.id.tabrow_block2_response).setVisibility(View.GONE);
-        }
-
-        //TODO: Size1 Option
-        clientActivity.findViewById(R.id.tabrow_size1_response).setVisibility(View.GONE);
-
-
-        //Response Code
-        TextView txtResponseCode = (TextView) clientActivity.findViewById(R.id.txt_code_response);
-        int messageCode = coapResponse.getMessageCode();
-        txtResponseCode.setText("" + ((messageCode >>> 5) & 7) + "." + String.format("%02d", messageCode & 31));
-
-
-        if(!coapResponse.isUpdateNotification()){
-            RadioButton radStopObservation = (RadioButton) clientActivity.findViewById(R.id.rad_stop_observation);
-            radStopObservation.setChecked(true);
-            radStopObservation.setEnabled(false);
-            radStopObservation.setVisibility(View.INVISIBLE);
-        }
-        //*/
     }
 
     public int getCountSuccess() {

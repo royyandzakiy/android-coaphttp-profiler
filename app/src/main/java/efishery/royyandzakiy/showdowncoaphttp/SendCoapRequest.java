@@ -18,17 +18,14 @@ import de.uzl.itm.ncoap.message.CoapResponse;
 import de.uzl.itm.ncoap.message.MessageType;
 
 public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.SpitfirefoxCallback> {
-    private ProgressDialog progressDialog;
-
     private String serverName, localUri, acceptedFormats, payloadFormat, payload, ifMatch, etags;
     private int portNumber;
     private boolean confirmable, observe;
     private BlockSize block1Size, block2Size;
     private CoapClient coapClient;
-
-    private int idCoapRequest;
-
     private MainActivity activity;
+
+    public int idCoapRequest;
 
     public SendCoapRequest(MainActivity activity, int idCoapRequest){
         this.activity = activity;
@@ -59,9 +56,6 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
         this.block2Size = this.getBlock2Size();
         this.block1Size = this.getBlock1Size();
-
-        //progressDialog.setMessage(this.activity.getResources().getString(R.string.waiting));
-        //progressDialog.show();
     }
 
     private BlockSize getBlock2Size() {
@@ -141,7 +135,6 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
                 return null;
             }
 
-
             //Set etag option values (if any)
             try {
                 coapRequest.setEtags(getOpaqueOptionValues(this.etags));
@@ -159,7 +152,6 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             } else if (observe) {
                 coapRequest.setObserve(0);
             }
-
 
             //Set accept option values in request (if any)
             if(!("".equals(this.acceptedFormats))){
@@ -191,7 +183,6 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
                 coapRequest.setContent(payload.getBytes(CoapMessage.CHARSET), Long.valueOf(payloadFormat));
             }
 
-
             //Create callback and send request
             SpitfirefoxCallback clientCallback = new SpitfirefoxCallback(
                     serviceURI, coapRequest.isObservationRequest()
@@ -199,7 +190,6 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             this.coapClient.sendCoapRequest(coapRequest, remoteEndpoint, clientCallback);
             return clientCallback;
         } catch (final Exception e) {
-            //this.progressDialog.dismiss();
             Log.d("DEBUG::","SendCoapRequest::doInBackground::catchError::" + e.getMessage());
             showLongToast(e.getMessage());
             return null;
@@ -234,9 +224,8 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
         @Override
         public void processCoapResponse(CoapResponse coapResponse) {
-            //progressDialog.dismiss();
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processCoapResponse::duration " + duration + " milllis");
+            Log.d("DEBUG::","SendCoapRequest::processCoapResponse::duration " + duration + " ms");
             activity.processResponse(coapResponse, this.serviceURI, duration);
 
             //increment countSuccess
@@ -247,7 +236,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         public void processEmptyAcknowledgement(){
             showLongToast("Empty ACK received!");
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processEmtpyAcknowledgement::duration " + duration + " milllis");
+            Log.d("DEBUG::","SendCoapRequest::processEmptyAcknowledgement::duration " + duration + " ms");
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
@@ -255,10 +244,9 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
         @Override
         public void processReset(){
-            //progressDialog.dismiss();
             showLongToast("RST received from Server!");
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processReset::duration " + duration + " milllis");
+            Log.d("DEBUG::","SendCoapRequest::processReset::duration " + duration + " ms");
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
@@ -266,10 +254,9 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
         @Override
         public void processTransmissionTimeout(){
-            //progressDialog.dismiss();
             showLongToast("Transmission timed out!");
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processTransmissionTimeout::duration " + duration + " milllis");
+            Log.d("DEBUG::","SendCoapRequest::processTransmissionTimeout::duration " + duration + " ms");
 
             //increment countFail
             activity.setCountFail(activity.getCountFail() + 1);
@@ -283,21 +270,23 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
                     //String expected = expectedLength == -1 ? "UNKNOWN" : ("" + expectedLength);
                     //progressDialog.setMessage(receivedLength + " / " + expected);
                     long duration = System.currentTimeMillis() - startTime;
-                    Log.d("DEBUG::","SendCoapRequest::processResponseBlockReceived::duration " + duration + " milllis");
+                    Log.d("DEBUG::","SendCoapRequest::processResponseBlockReceived::duration " + duration + " ms");
                 }
             });
         }
 
         @Override
         public void processRetransmission(){
-            //showLongToast("Retransmission No. " + (retransmissionCounter++));
+            retransmissionCounter++;
+            //showLongToast("Retransmission No. " + (retransmissionCounter));
+            Log.d("DEBUG::","SendCoapRequest::processRetransmission::Retransmission No. " + retransmissionCounter);
         }
 
         @Override
         public void processMiscellaneousError(final String description) {
-            //progressDialog.dismiss();
             showLongToast("ERROR: " + description + "!");
 
+            Log.d("DEBUG::","SendCoapRequest::processMiscellaneousError::description = " + description);
             //increment countFail
             activity.setCountFail(activity.getCountFail() + 1);
         }
