@@ -8,8 +8,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,43 +19,31 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import de.uzl.itm.ncoap.application.client.CoapClient;
-import de.uzl.itm.ncoap.message.CoapMessage;
 import de.uzl.itm.ncoap.message.CoapResponse;
-import de.uzl.itm.ncoap.message.options.OpaqueOptionValue;
 import de.uzl.itm.ncoap.message.options.UintOptionValue;
 
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity {
-
-    public class ReqResData {
-        public int id;
-        public float timesend;
-        public float timereply;
-        public float duration;
-        public boolean success;
-    }
-
-    long starttime;
-
-    ArrayList<ReqResData> listReqResData = new ArrayList<ReqResData>();
-    private RequestQueue queue;
-
-    Button send;
-    TextView mRequestType, 
+        // COMPONENTS
+    public Button send;
+    public TextView mRequestType,
             totalRequestValue, packetLossValue, totalRequestTimeValue, requestTimeValue, cpuProcessingValue, contentLengthValue, totalContentLengthValue,
             responseSuccessValue, responseFailValue, responseMessage, status;
-    boolean isProcessing = false;
-    int countSuccess = 0, countFail = 0, countRequest = 151;
-    String type = "http";
-    float durasiAvg, durasiMax = -1, durasiMin = 9999, durasiTotal = 0, durasiTemp;
 
+    // SYSTEM
+    private long startTime;
+    private ArrayList<ReqResData> listReqResData = new ArrayList<ReqResData>();
+    private RequestQueue queue;
     private CoapClient clientApplication;
-    Stopwatch stopwatch;
+    private String type = "http";
+    private boolean isProcessing = false;
+    private int countSuccess = 0, countFail = 0, countRequest = 10;
+    private float durasiAvg;
+    private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -87,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         initVariables();
 
-        starttime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
 
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -100,9 +86,8 @@ public class MainActivity extends AppCompatActivity {
 
                     Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
                     status.setText("requesting...");
-                    stopwatch.start();
 
-                    // calculate: packet loss, response time, cpu processing, payload size
+                    // calculate: packet loss, response time
                     // change values
                     totalRequestValue.setText("isProcessing");
                     packetLossValue.setText("isProcessing");
@@ -121,30 +106,26 @@ public class MainActivity extends AppCompatActivity {
 
     protected void sendRequest() {
         // loop send All Asynchronously
-        for (int i=0; i<countRequest; i++) {
+        for (int idRequest=0; idRequest<countRequest; idRequest++) {
             if (type == "http") {
-                sendHttpRequest(i);
+                sendHttpRequest(idRequest);
             } else if (type == "coap") {
-                sendCoapRequest(i);
-                //Log.d("DEBUG::sendRequest::","request ke-" + i + " terkirim!");
-                //if (i == countRequest-1) requestDone(); // bruteforce requestDone()
+                sendCoapRequest(idRequest);
             }
         }
     }
 
-    protected void sendCoapRequest(int n) {
+    protected void sendCoapRequest(int idCoapRequest) {
         // do something
-        new SendCoapRequest(this).execute();
+        new SendCoapRequest(this, idCoapRequest).execute();
     }
 
-    protected void sendHttpRequest(int n) {
+    protected void sendHttpRequest(int idRequest) {
         // Instantiate the RequestQueue.
-        String url ="https://sakernas-api.herokuapp.com/pemutakhiran/5a8239f92cece14688a14f2c";
+        final String url ="https://sakernas-api.herokuapp.com/pemutakhiran/5a8239f92cece14688a14f2c";
 
-        final ReqResData temp = new ReqResData();
-        temp.id = n;
-
-        //Log.d("DEBUG::GAK_PROCESSING::","sendrequest_sendHTTPRequest - " + n);
+        final ReqResData tempReqResData = new ReqResData();
+        tempReqResData.idRequest = idRequest;
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -152,11 +133,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         // Display response
-                        // responseSuccessValue.setText(response);
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
-                        temp.timereply = stopwatch.getElapsedTimeSecs();
-                        temp.success = true;
-                        listReqResData.add(temp);
+
+                        tempReqResData.duration = System.currentTimeMillis() - startTime;
+                        tempReqResData.success = true;
+                        listReqResData.add(tempReqResData);
 
                         if ((countFail + countSuccess) == countRequest) {
                             requestDone();
@@ -165,12 +146,11 @@ public class MainActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                // responseSuccessValue.setText("That didn't work!");
                 responseFailValue.setText("Fail count: "+ ++countFail);
-                //temp.timereply = stopwatch.getElapsedTimeSecs();
-                temp.timereply = System.currentTimeMillis();
-                temp.success = false;
-                listReqResData.add(temp);
+
+                tempReqResData.duration = System.currentTimeMillis() - startTime;
+                tempReqResData.success = false;
+                listReqResData.add(tempReqResData);
 
                 if ((countFail + countSuccess) == countRequest) {
                     requestDone();
@@ -180,16 +160,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
-        //temp.timesend = stopwatch.getElapsedTimeSecs();
-        temp.timesend = System.currentTimeMillis();
     }
 
     protected void requestDone() {
         Log.d("DEBUG::","MainActivity::requestDone");
-        Log.d("DEBUG::","MainActivity::listReqResData.size() = " + listReqResData.size());
+        Log.d("DEBUG::","MainActivity::VARIABLES.listReqResData.size() = " + listReqResData.size());
         //=== Get Durasi
         for (int i=0; i<listReqResData.size(); i++) {
-            durasiTemp = listReqResData.get(i).timereply - listReqResData.get(i).timesend; // Milli
+            if (type.equals("http")) durasiTemp = listReqResData.get(i).duration; // Milli
+            else if (type.equals("coap")) durasiTemp = listReqResData.get(i).duration;
             if (durasiMax < durasiTemp) durasiMax = durasiTemp;
             if (durasiMin > durasiTemp) durasiMin = durasiTemp;
             durasiTotal += durasiTemp;
@@ -197,36 +176,28 @@ public class MainActivity extends AppCompatActivity {
         durasiAvg = (float) durasiTotal / listReqResData.size();
 
         Log.d("durasiTotal:", String.valueOf(durasiTotal));
+        Log.d("durasiMax:", String.valueOf(durasiMax));
+        Log.d("durasiMin:", String.valueOf(durasiMin));
         Log.d("listReqResData:", String.valueOf(listReqResData.size()));
         Log.d("durasiAvg:", String.valueOf(durasiAvg));
 
         //=== Change messages
-        String elapsedTime = String.valueOf(stopwatch.getElapsedTimeSecs());
-        String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " secs";
+        String elapsedTime = String.valueOf(System.currentTimeMillis() - startTime);
+        String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
         Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
         status.setText("Response done!");
         totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " packets");
         packetLossValue.setText(String.valueOf(countFail) + " packets");
-        totalRequestTimeValue.setText(String.valueOf(elapsedTime) + " secs");
-        requestTimeValue.setText(durasiAvg + " / " + (float) durasiMax + " / " + (float) durasiMin + " secs"); // hitung AVG/MAX/MIN
-        // cpuProcessingValue.setText(); // hitung AVG/MAX/MIN
-        // contentLengthValue.setText(); // apakah bisa didapat? kalau tidak gunakan wireshark
-        // totalContentLengthValue.setText(); // apakah bisa didapat? kalau tidak gunakan wireshark
-
-        //=== DEBUG
-        // Log.d("DEBUG::", "size of list: " + String.valueOf(listReqResData.size()));
-        // Log.d("DEBUG::", "list ke-90, timereply: " + listReqResData.get(90).timereply);
-
-        // RESET ALL
+        totalRequestTimeValue.setText(String.valueOf(elapsedTime) + " ms");
+        requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
         resetVars();
     }
 
     protected void resetVars() {
-        stopwatch.stop();
         queue.stop();
         isProcessing = false;
         countSuccess = 0; countFail = 0;
-        durasiMin = NULL; durasiMax = NULL; durasiAvg = NULL; durasiTemp = NULL; durasiTotal = 0;
+        durasiMin = 9999999; durasiMax = -1; durasiAvg = NULL; durasiTemp = NULL; durasiTotal = 0;
         listReqResData.clear();
     }
 
@@ -268,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
         status = (TextView) findViewById(R.id.status);
 
         this.clientApplication = new CoapClient();
-        stopwatch = new Stopwatch();
         queue = Volley.newRequestQueue(this);
     }
 
@@ -281,35 +251,32 @@ public class MainActivity extends AppCompatActivity {
         temp.duration = duration;
         listReqResData.add(temp);
 
-        // MUNGKIN FAIL DISINI
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 long block2Num = coapResponse.getBlock2Number();
-                String text = "Response received";
-                if (block2Num != UintOptionValue.UNDEFINED) {
-                    text += " (" + block2Num + " blocks in " + duration + " ms)";
-                } else {
+                String text = "";
+                //text = "Response received";
+                //if (block2Num != UintOptionValue.UNDEFINED) {
+                //    text += " (" + block2Num + " blocks in " + duration + " ms)";
+                //} else {
                     text += " (after " + duration + " ms)";
-                }
+                //}
 
                 totalRequestTimeValue.setText(text);
 
                 //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
                 responseReceived(serviceURI, coapResponse);
-                //Log.d("DEBUG::","response ke-" + countFail + ", running");
             }
         });
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        ++countFail;
-        Log.d("DEBUG::","MainActivity::responseReceived::countFail = " + countFail + "; stopwatch = " + stopwatch.getElapsedTimeSecs());
-        if (countFail == countRequest) {
+        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
+        if ((countSuccess + countFail) == countRequest) {
             requestDone();
         }
-        //Log.d("DEBUG::","MainActivity::responseReceived countSuccess = " + countSuccess);
         /*
         TextView txtResponse = (TextView) getActivity().findViewById(R.id.txt_response_payload);
         txtResponse.setText("");
@@ -416,5 +383,21 @@ public class MainActivity extends AppCompatActivity {
             radStopObservation.setVisibility(View.INVISIBLE);
         }
         //*/
+    }
+
+    public int getCountSuccess() {
+        return countSuccess;
+    }
+
+    public int getCountFail() {
+        return countFail;
+    }
+
+    public void setCountSuccess(int _countSuccess) {
+        countSuccess = _countSuccess;
+    }
+
+    public void setCountFail(int _countFail) {
+        countFail = _countFail;
     }
 }

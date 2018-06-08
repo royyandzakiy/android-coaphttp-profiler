@@ -1,0 +1,13 @@
+# CoAP dummy server:
+104.155.223.252:5677
+
+countSuccess
+- processCoapResponse: SendCoapRequest
+- processEmptyAcknowledgement: SendCoapRequest
+- processReset: SendCoapRequest
+
+countFail
+- processTransmissionTimeout: SendCoapRequest
+- processMiscellaneousError: SendCoapRequest
+
+nb: SendDiscoveryTask tidak perlu dihitung durasinya.
