@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private CoapClient clientApplication;
     private String type = "http";
     private boolean isProcessing = false;
-    private int countSuccess = 0, countFail = 0, countRequest = 151;
+    private int countSuccess = 0, countFail = 0, countRequest = 130;
     private float durasiAvg;
     private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
 
@@ -172,22 +172,27 @@ public class MainActivity extends AppCompatActivity {
         }
         durasiAvg = (float) durasiTotal / listReqResData.size();
 
-        Log.d("durasiTotal:", String.valueOf(durasiTotal));
-        Log.d("durasiMax:", String.valueOf(durasiMax));
-        Log.d("durasiMin:", String.valueOf(durasiMin));
-        Log.d("listReqResData:", String.valueOf(listReqResData.size()));
-        Log.d("durasiAvg:", String.valueOf(durasiAvg));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiTotal:"+ String.valueOf(durasiTotal));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiMax:"+ String.valueOf(durasiMax));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiMin:"+ String.valueOf(durasiMin));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.listReqResData:"+ String.valueOf(listReqResData.size()));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiAvg:"+ String.valueOf(durasiAvg));
 
         //=== Change messages
         String elapsedTime = String.valueOf(System.currentTimeMillis() - startTime);
-        String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
-        Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
-        status.setText("Response done!");
-        totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " packets");
+
+        totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + countRequest + " packets");
         packetLossValue.setText(String.valueOf(countFail) + " packets");
         totalRequestTimeValue.setText(String.valueOf(elapsedTime) + " ms");
         requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
-        resetVars();
+
+        long duration = System.currentTimeMillis() - startTime;
+        if ((countFail + countSuccess) == countRequest || duration > 60000) {
+            String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
+            Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
+            status.setText("Response done!");
+            resetVars();
+        }
     }
 
     protected void resetVars() {
@@ -245,14 +250,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 long block2Num = coapResponse.getBlock2Number(); // block2Num itu utk apa?
-                String text = "";
-                //text = "Response received";
+                //String text = "Response received";
                 //if (block2Num != UintOptionValue.UNDEFINED) {
                 //    text += " (" + block2Num + " blocks in " + duration + " ms)";
                 //} else {
-                    text += " (after " + duration + " ms)";
+                //    text += " (after " + duration + " ms)";
                 //}
 
+                String text = duration + " ms)";
                 totalRequestTimeValue.setText(text);
 
                 //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
@@ -264,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
         Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
-        if ((countSuccess + countFail) == countRequest) {
+        if ((countSuccess + countFail) >= countRequest/2) {
             requestDone();
         }
     }

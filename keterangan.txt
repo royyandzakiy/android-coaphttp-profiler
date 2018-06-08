@@ -11,3 +11,12 @@ countFail
 - processMiscellaneousError: SendCoapRequest
 
 nb: SendDiscoveryTask tidak perlu dihitung durasinya.
+
+# countRequest = 151
+143
+136
+134
+134
+134
+
+# countRequest = 130

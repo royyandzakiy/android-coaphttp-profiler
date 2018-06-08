@@ -190,7 +190,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             this.coapClient.sendCoapRequest(coapRequest, remoteEndpoint, clientCallback);
             return clientCallback;
         } catch (final Exception e) {
-            Log.d("DEBUG::","SendCoapRequest::doInBackground::catchError::" + e.getMessage());
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::doInBackground::catchError::" + e.getMessage());
             showLongToast(e.getMessage());
             return null;
         }
@@ -225,7 +225,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         @Override
         public void processCoapResponse(CoapResponse coapResponse) {
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processCoapResponse::duration " + duration + " ms");
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processCoapResponse::duration " + duration + " ms");
             activity.processResponse(coapResponse, this.serviceURI, duration);
 
             //increment countSuccess
@@ -236,7 +236,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         public void processEmptyAcknowledgement(){
             showLongToast("Empty ACK received!");
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processEmptyAcknowledgement::duration " + duration + " ms");
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processEmptyAcknowledgement::duration " + duration + " ms");
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
@@ -246,7 +246,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         public void processReset(){
             showLongToast("RST received from Server!");
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processReset::duration " + duration + " ms");
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processReset::duration " + duration + " ms");
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
@@ -256,7 +256,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         public void processTransmissionTimeout(){
             showLongToast("Transmission timed out!");
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::processTransmissionTimeout::duration " + duration + " ms");
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processTransmissionTimeout::duration " + duration + " ms");
 
             //increment countFail
             activity.setCountFail(activity.getCountFail() + 1);
@@ -269,8 +269,8 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
                 public void run() {
                     //String expected = expectedLength == -1 ? "UNKNOWN" : ("" + expectedLength);
                     //progressDialog.setMessage(receivedLength + " / " + expected);
-                    long duration = System.currentTimeMillis() - startTime;
-                    Log.d("DEBUG::","SendCoapRequest::processResponseBlockReceived::duration " + duration + " ms");
+                    //long duration = System.currentTimeMillis() - startTime;
+                    //Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processResponseBlockReceived::duration " + duration + " ms");
                 }
             });
         }
@@ -279,14 +279,14 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         public void processRetransmission(){
             retransmissionCounter++;
             //showLongToast("Retransmission No. " + (retransmissionCounter));
-            Log.d("DEBUG::","SendCoapRequest::processRetransmission::Retransmission No. " + retransmissionCounter);
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processRetransmission::Retransmission No. " + retransmissionCounter);
         }
 
         @Override
         public void processMiscellaneousError(final String description) {
             showLongToast("ERROR: " + description + "!");
 
-            Log.d("DEBUG::","SendCoapRequest::processMiscellaneousError::description = " + description);
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processMiscellaneousError::description = " + description);
             //increment countFail
             activity.setCountFail(activity.getCountFail() + 1);
         }
