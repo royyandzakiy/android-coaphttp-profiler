@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,16 +25,16 @@ import java.util.ArrayList;
 
 import de.uzl.itm.ncoap.application.client.CoapClient;
 import de.uzl.itm.ncoap.message.CoapResponse;
-import de.uzl.itm.ncoap.message.options.UintOptionValue;
 
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity {
         // COMPONENTS
-    public Button send;
-    public TextView mRequestType,
+    private Button send;
+    private TextView mRequestType,
             totalRequestValue, packetLossValue, totalRequestTimeValue, requestTimeValue,
             responseSuccessValue, responseFailValue, status;
+    private EditText nRequestsValue;
 
     // SYSTEM
     private long startTime;
@@ -79,24 +80,29 @@ public class MainActivity extends AppCompatActivity {
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                if (!isProcessing) {
-                    // send Request
-                    isProcessing = true;
+                if (!nRequestsValue.getText().toString().matches("")) {
+                    if (!isProcessing) {
+                        // send Request
+                        isProcessing = true;
 
-                    sendRequest();
+                        countRequest = Integer.valueOf(nRequestsValue.getText().toString());
+                        nRequestsValue.setText("");
 
-                    Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
-                    status.setText("requesting...");
+                        sendRequest();
 
-                    // calculate: packet loss, response time
-                    // change values
-                    totalRequestValue.setText("isProcessing");
-                    packetLossValue.setText("isProcessing");
-                    totalRequestTimeValue.setText("isProcessing");
-                    requestTimeValue.setText("isProcessing");
+                        Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
+                        status.setText("requesting...");
 
-                    responseSuccessValue.setText("isProcessing");
-                    responseFailValue.setText("isProcessing");
+                        // calculate: packet loss, response time
+                        // change values
+                        totalRequestValue.setText("isProcessing");
+                        packetLossValue.setText("isProcessing");
+                        totalRequestTimeValue.setText("isProcessing");
+                        requestTimeValue.setText("isProcessing");
+
+                        responseSuccessValue.setText("isProcessing");
+                        responseFailValue.setText("isProcessing");
+                    }
                 }
             }
         });
@@ -232,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
         totalRequestTimeValue = (TextView) findViewById(R.id.totalRequestTimeValue);
         packetLossValue = (TextView) findViewById(R.id.packetLossValue);
         requestTimeValue = (TextView) findViewById(R.id.requestTimeValue);
+        nRequestsValue = (EditText) findViewById(R.id.nRequestValue);
+        nRequestsValue.setText(String.valueOf(countRequest));
 
         responseSuccessValue = (TextView) findViewById(R.id.responseSuccessValue);
         responseFailValue = (TextView) findViewById(R.id.responseFailValue);
