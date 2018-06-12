@@ -37,7 +37,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
     @Override
     protected void onPreExecute(){
 
-        this.serverName = "coap.me";
+        this.serverName = "ec2-54-169-136-164.ap-southeast-1.compute.amazonaws.com";
 
         try {
             this.portNumber = 5683;
@@ -49,8 +49,8 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         this.confirmable = true;
         this.observe = false;
         this.acceptedFormats = "";
-        this.payloadFormat = "";
-        this.payload = "";
+        this.payloadFormat = "50";
+        this.payload = "{'id':"+ idCoapRequest +"}";
         this.ifMatch = "";
         this.etags = "";
 

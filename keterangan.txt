@@ -1,22 +1,36 @@
 # CoAP dummy server:
 104.155.223.252:5677
 
-countSuccess
+1. Q: Kemana response akan diolah setelah request dg idRequest tertentu dikirim secara Async?
+## countSuccess
 - processCoapResponse: SendCoapRequest
 - processEmptyAcknowledgement: SendCoapRequest
 - processReset: SendCoapRequest
 
-countFail
+## countFail
 - processTransmissionTimeout: SendCoapRequest
 - processMiscellaneousError: SendCoapRequest
 
 nb: SendDiscoveryTask tidak perlu dihitung durasinya.
 
-# countRequest = 151
-143
-136
-134
-134
-134
+2. Q: Berapa jumlah request yang berhasil dihitung?
+## countRequest = 151
+percobaan ke-1: 143
+percobaan ke-2: 136
+percobaan ke-3: 134
+percobaan ke-4: 134
+percobaan ke-5: 134
 
-# countRequest = 130
+## countRequest = 130
+percobaan ke-1: 112 > masih retransmission
+percobaan ke-2: 118
+percobaan ke-3: 117
+
+nb: countRequest adalah total request yg dikirmkan
+
+simpulan: ada request yg hilang!!!
+- gak pernah semua request masuk processCoapResponse
+- gak pernah ada request masuk processEmptyAcknowledgement
+- gak pernah ada request masuk processReset
+- gak pernah ada request masuk processTransmissionTimeout
+- gak pernah ada request masuk processMiscellaneousError

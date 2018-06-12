@@ -13,15 +13,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONObject;
+
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.uzl.itm.ncoap.application.client.CoapClient;
 import de.uzl.itm.ncoap.message.CoapResponse;
@@ -29,7 +35,7 @@ import de.uzl.itm.ncoap.message.CoapResponse;
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity {
-        // COMPONENTS
+    // COMPONENTS
     private Button send;
     private TextView mRequestType,
             totalRequestValue, packetLossValue, totalRequestTimeValue, requestTimeValue,
@@ -46,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private int countSuccess = 0, countFail = 0, countRequest = 130;
     private float durasiAvg;
     private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
+    final String url ="http://ec2-54-169-136-164.ap-southeast-1.compute.amazonaws.com:5675";
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -80,13 +87,14 @@ public class MainActivity extends AppCompatActivity {
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                resetVars();
+
                 if (!nRequestsValue.getText().toString().matches("")) {
                     if (!isProcessing) {
                         // send Request
                         isProcessing = true;
 
                         countRequest = Integer.valueOf(nRequestsValue.getText().toString());
-                        nRequestsValue.setText("");
 
                         sendRequest();
 
@@ -126,16 +134,22 @@ public class MainActivity extends AppCompatActivity {
 
     protected void sendHttpRequest(int idRequest) {
         // Instantiate the RequestQueue.
-        final String url ="https://sakernas-api.herokuapp.com/pemutakhiran/5a8239f92cece14688a14f2c";
 
         final ReqResData tempReqResData = new ReqResData();
         tempReqResData.idRequest = idRequest;
+        JSONObject postparams=new JSONObject();
+        try {
+            postparams.put("id", idRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+        JsonObjectRequest jsonObjectRequestRequest = new JsonObjectRequest(Request.Method.POST, url, (String) null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
+                    public void onResponse(JSONObject response) {
+                        Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.resposnse=" + response);
                         // Display response
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
 
@@ -160,22 +174,38 @@ public class MainActivity extends AppCompatActivity {
                     requestDone();
                 }
             }
-        });
+        }) {
+
+            /** Passing some request headers* */
+            @Override
+            public Map<String,String> getHeaders() throws AuthFailureError {
+                HashMap<String,String> headers = new HashMap();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
 
         // Add the request to the RequestQueue.
-        stringRequest.setTag("sendHttpRequest");
-        queue.add(stringRequest);
+        jsonObjectRequestRequest.setTag("sendHttpRequest");
+        queue.add(jsonObjectRequestRequest);
     }
 
     protected void requestDone() {
+        // FUNGSI:
+        // 1. melakukan update terhadap UI
+        // 2. melakukan reset terhadap variabel (jika semua request telah terhitung baik Success atau Fail)
         Log.d("DEBUG::","MainActivity::requestDone");
         Log.d("DEBUG::","MainActivity::VARIABLES.listReqResData.size() = " + listReqResData.size());
         //=== Get Durasi
         for (int i=0; i<listReqResData.size(); i++) {
-            if (type.equals("http")) durasiTemp = listReqResData.get(i).duration; // Milli
-            else if (type.equals("coap")) durasiTemp = listReqResData.get(i).duration;
-            if (durasiMax < durasiTemp) durasiMax = durasiTemp;
-            if (durasiMin > durasiTemp) durasiMin = durasiTemp;
+            durasiTemp = listReqResData.get(i).duration; // Milli
+
+            if (durasiMax < durasiTemp) {
+                durasiMax = durasiTemp;
+            }
+            if (durasiMin > durasiTemp) {
+                durasiMin = durasiTemp;
+            }
             durasiTotal += durasiTemp;
         }
         durasiAvg = (float) durasiTotal / listReqResData.size();
@@ -204,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void resetVars() {
+        Log.d("DEBUG::","MainActivity::resetVars");
         queue.cancelAll("sendHttpRequest");
         queue.stop();
         queue.start();
@@ -270,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
                 //}
 
                 String text = duration + " ms";
-                totalRequestTimeValue.setText(text);
+                // totalRequestTimeValue.setText(text); // digunakan sementara, karena totalRequestTimeValue baru terisi setelah terpanggil requestDone()
 
                 //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
@@ -281,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
         Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
-        if ((countSuccess + countFail) >= countRequest/2) {
+        if ((countSuccess + countFail) > countRequest/2) {
             requestDone();
         }
     }
