@@ -127,29 +127,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected void sendCoapRequest(int idCoapRequest) {
-        // do something
-        new SendCoapRequest(this, idCoapRequest).execute();
-    }
-
     protected void sendHttpRequest(int idRequest) {
         // Instantiate the RequestQueue.
 
         final ReqResData tempReqResData = new ReqResData();
         tempReqResData.idRequest = idRequest;
-        JSONObject postparams=new JSONObject();
+        JSONObject jsonBody=new JSONObject();
         try {
-            postparams.put("id", idRequest);
+            jsonBody.put("id", idRequest);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         // Request a string response from the provided URL.
-        JsonObjectRequest jsonObjectRequestRequest = new JsonObjectRequest(Request.Method.POST, url, (String) null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.resposnse=" + response);
+                        Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.response=" + response);
                         // Display response
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
 
@@ -186,8 +181,20 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // Add the request to the RequestQueue.
-        jsonObjectRequestRequest.setTag("sendHttpRequest");
-        queue.add(jsonObjectRequestRequest);
+        jsonObjectRequest.setTag("sendHttpRequest");
+        queue.add(jsonObjectRequest);
+    }
+
+
+    protected void sendCoapRequest(int idCoapRequest) {
+        // Discover
+        // GET
+        // POST
+        // PUT
+        // DELETE
+        // Ping
+        long method = 1; // GET
+        new SendCoapRequest(this, idCoapRequest).execute(method);
     }
 
     protected void requestDone() {
@@ -234,7 +241,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void resetVars() {
-        Log.d("DEBUG::","MainActivity::resetVars");
         queue.cancelAll("sendHttpRequest");
         queue.stop();
         queue.start();
