@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.uzl.itm.ncoap.application.client.CoapClient;
+import de.uzl.itm.ncoap.message.CoapMessage;
 import de.uzl.itm.ncoap.message.CoapResponse;
 
 import static java.sql.Types.NULL;
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         // PUT
         // DELETE
         // Ping
-        long method = 1; // GET
+        long method = 2; // GET
         new SendCoapRequest(this, idCoapRequest).execute(method);
     }
 
@@ -317,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
+        Log.d("DEBUG::","MainAcitivy::responseReceived::VARIABLES.coapResponse="+coapResponse.getContent().toString(CoapMessage.CHARSET));
         Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
         if ((countSuccess + countFail) > countRequest/2) {
             requestDone();

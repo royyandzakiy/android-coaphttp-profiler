@@ -2,6 +2,8 @@ package efishery.royyandzakiy.showdowncoaphttp;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -100,6 +102,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected SpitfirefoxCallback doInBackground(Long... method){
         try{
@@ -124,7 +127,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             URI serviceURI = new URI("coap", null, serverName, remoteEndpoint.getPort(), localUri, null, null);
 
             //Create initial CoAP request
-            CoapRequest coapRequest = new CoapRequest(messageType, 1, serviceURI);
+            CoapRequest coapRequest = new CoapRequest(messageType, method[0].intValue(), serviceURI);
 
             //Set if-match option values (if any)
             try {
