@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void resetVars() {
+        Log.d("DEBUG::","MainActivity::resetVars()");
         queue.cancelAll("sendHttpRequest");
         queue.stop();
         queue.start();
@@ -318,9 +319,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        Log.d("DEBUG::","MainAcitivy::responseReceived::VARIABLES.coapResponse="+coapResponse.getContent().toString(CoapMessage.CHARSET));
+        Log.d("DEBUG::","MainAcitivy::responseReceived::VARIABLES.coapResponse="+coapResponse.getContent().toString(CoapMessage.CHARSET) + coapResponse.getContent().toString());
         Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
-        if ((countSuccess + countFail) > countRequest/2) {
+        if ((countSuccess + countFail) == countRequest) {
             requestDone();
         }
     }
