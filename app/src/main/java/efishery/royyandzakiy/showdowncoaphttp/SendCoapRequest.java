@@ -185,6 +185,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             } else if (!("".equals(payloadFormat))){
                 coapRequest.setContent(payload.getBytes(CoapMessage.CHARSET), Long.valueOf(payloadFormat));
             }
+            Log.d("DEBUG::","SendCoapRequest::VARIABLES.payload=" + payload);
 
             //Create callback and send request
             SpitfirefoxCallback clientCallback = new SpitfirefoxCallback(
@@ -228,7 +229,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         @Override
         public void processCoapResponse(CoapResponse coapResponse) {
             long duration = System.currentTimeMillis() - startTime;
-            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processCoapResponse::current("+System.currentTimeMillis()+") - startTime("+startTime+") = duration(" + duration + ") ms");
+            Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processCoapResponse::VARIABLES.duration=" + duration + " ms");
             activity.processResponse(coapResponse, this.serviceURI, duration);
 
             //increment countSuccess

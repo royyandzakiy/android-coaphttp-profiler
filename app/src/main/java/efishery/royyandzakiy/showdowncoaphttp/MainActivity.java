@@ -25,6 +25,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONObject;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -83,8 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
         initVariables();
 
-        startTime = System.currentTimeMillis();
-
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
@@ -119,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected void sendRequest() {
         // loop send All Asynchronously
+        startTime = System.currentTimeMillis();
         for (int idRequest=0; idRequest<countRequest; idRequest++) {
             if (type == "http") {
                 sendHttpRequest(idRequest);
@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
 
         long duration = System.currentTimeMillis() - startTime;
-        if ((countFail + countSuccess) == countRequest || duration > 60000) {
+        if ((countFail + countSuccess) >= countRequest || duration > 60000) {
             String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
             Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             status.setText("Response done!");
@@ -244,12 +244,13 @@ public class MainActivity extends AppCompatActivity {
     protected void resetVars() {
         Log.d("DEBUG::","MainActivity::resetVars()");
         queue.cancelAll("sendHttpRequest");
-        queue.stop();
-        queue.start();
         isProcessing = false;
         countSuccess = 0; countFail = 0;
         durasiMin = 9999999; durasiMax = -1; durasiAvg = NULL; durasiTemp = NULL; durasiTotal = 0;
         listReqResData.clear();
+        queue.stop();
+        queue.start();
+        Log.d("DEBUG::","MainActivity::resetVars():VARIABLES.durasiTotal=" + durasiTotal);
     }
 
     protected void resetAll() {
@@ -313,13 +314,14 @@ public class MainActivity extends AppCompatActivity {
 
                 //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
+                Log.d("DEBUG::","MainAcitivty::processResponse::VARIABLES.coapResponse="+coapResponse.getContent().toString(CoapResponse.CHARSET));
                 responseReceived(serviceURI, coapResponse);
             }
         });
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        Log.d("DEBUG::","MainAcitivy::responseReceived::VARIABLES.coapResponse="+coapResponse.getContent().toString(CoapMessage.CHARSET) + coapResponse.getContent().toString());
+        Log.d("DEBUG::","MainAcitivty::responseReceived::VARIABLES.coapResponse="+coapResponse.getContent().toString());
         Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
         if ((countSuccess + countFail) == countRequest) {
             requestDone();
