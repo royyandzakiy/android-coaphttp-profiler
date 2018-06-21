@@ -41,11 +41,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
         this.serverName = "ec2-54-169-136-164.ap-southeast-1.compute.amazonaws.com";
 
-        try {
-            this.portNumber = 5683;
-        } catch(NumberFormatException ex) {
-            this.portNumber = 5683;
-        }
+        this.portNumber = 5683;
 
         this.localUri = "";
         this.confirmable = true;
@@ -61,12 +57,12 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
     }
 
     private BlockSize getBlock2Size() {
-        long block2Szx= 0;
+        long block2Szx= -1;
         return BlockSize.getBlockSize(block2Szx);
     }
 
     private BlockSize getBlock1Size() {
-        long block1Szx= 0;
+        long block1Szx= -1;
         return BlockSize.getBlockSize(block1Szx);
     }
 
