@@ -216,6 +216,20 @@
                     android:text="null"
                     android:textColor="?android:attr/colorActivatedHighlight" />
 
+                <TextView
+                    android:id="@+id/txRate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight" />
+
+                <TextView
+                    android:id="@+id/rxRate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="null"
+                    android:textColor="?android:attr/colorActivatedHighlight" />
+
             </LinearLayout>
 
             </LinearLayout>

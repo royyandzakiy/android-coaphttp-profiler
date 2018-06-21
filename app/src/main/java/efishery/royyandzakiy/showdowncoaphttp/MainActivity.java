@@ -1,6 +1,5 @@
 package efishery.royyandzakiy.showdowncoaphttp;
 
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -19,19 +18,16 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.uzl.itm.ncoap.application.client.CoapClient;
-import de.uzl.itm.ncoap.message.CoapMessage;
 import de.uzl.itm.ncoap.message.CoapResponse;
 
 import static java.sql.Types.NULL;
@@ -51,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private CoapClient clientApplication;
     private String type = "http";
     private boolean isProcessing = false;
-    private int countSuccess = 0, countFail = 0, countRequest = 130;
+    private int countSuccess = 0, countFail = 0, countRequest = 130, countRequestMinimumSuccess;
+    private double countRequestErrorMargin = 0.02;
     private float durasiAvg;
     private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
     final String url ="http://ec2-54-169-136-164.ap-southeast-1.compute.amazonaws.com:5675";
@@ -95,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
                         isProcessing = true;
 
                         countRequest = Integer.valueOf(nRequestsValue.getText().toString());
+                        //countRequestMinimumSuccess = countRequest- (int) Math.ceil(countRequest*countRequestErrorMargin);
+                        countRequestMinimumSuccess = countRequest-20;
 
                         sendRequest();
 
@@ -139,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.jsonBody=" + jsonBody.toString());
 
         // Request a string response from the provided URL.
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                         tempReqResData.success = true;
                         listReqResData.add(tempReqResData);
 
-                        if ((countFail + countSuccess) == countRequest) {
+                        if ((countFail + countSuccess) >= countRequestMinimumSuccess) {
                             requestDone();
                         }
                     }
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 tempReqResData.success = false;
                 listReqResData.add(tempReqResData);
 
-                if ((countFail + countSuccess) == countRequest) {
+                if ((countFail + countSuccess) >= countRequestMinimumSuccess) {
                     requestDone();
                 }
             }
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         // PUT
         // DELETE
         // Ping
-        long method = 2; // GET
+        long method = 2; // POST
         new SendCoapRequest(this, idCoapRequest).execute(method);
     }
 
@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
 
         long duration = System.currentTimeMillis() - startTime;
-        if ((countFail + countSuccess) >= countRequest || duration > 60000) {
+        if ((countFail + countSuccess) >= (countRequestMinimumSuccess) || duration > 60000) { // duration tidak pernah tertrigger
             String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
             Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             status.setText("Response done!");
@@ -321,9 +321,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        Log.d("DEBUG::","MainAcitivty::responseReceived::VARIABLES.coapResponse="+coapResponse.getContent().toString());
-        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail);
-        if ((countSuccess + countFail) == countRequest) {
+        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail+";countRequestMinimumSuccess=" + countRequestMinimumSuccess);
+        if ((countSuccess + countFail) >= countRequestMinimumSuccess) {
             requestDone();
         }
     }

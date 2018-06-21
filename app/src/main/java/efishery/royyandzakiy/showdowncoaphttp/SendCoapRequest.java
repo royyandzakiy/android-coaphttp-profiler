@@ -52,7 +52,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         this.observe = false;
         this.acceptedFormats = "";
         this.payloadFormat = "50";
-        this.payload = "{'id':"+ idCoapRequest +"}";
+        this.payload = "{\"id\":"+idCoapRequest+"}";
         this.ifMatch = "";
         this.etags = "";
 
