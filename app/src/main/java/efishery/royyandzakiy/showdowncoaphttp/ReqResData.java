@@ -1,7 +1,7 @@
 package efishery.royyandzakiy.showdowncoaphttp;
 
 public class ReqResData {
-    public int idRequest;
+    public int messageID;
     public long duration;
     public boolean success;
 

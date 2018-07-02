@@ -259,7 +259,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processTransmissionTimeout::duration " + duration + " ms");
 
             //increment countFail
-            activity.setCountFail(activity.getCountFail() + 1);
+            //activity.setCountFail(activity.getCountFail() + 1);
         }
 
         @Override
@@ -278,8 +278,13 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
         @Override
         public void processRetransmission(){
             retransmissionCounter++;
+            long duration = System.currentTimeMillis() - startTime;
             //showLongToast("Retransmission No. " + (retransmissionCounter));
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processRetransmission::Retransmission No. " + retransmissionCounter);
+            if (retransmissionCounter == 1) {
+                activity.setCountFail(activity.getCountFail() + 1);
+                activity.processResponseFailed(idCoapRequest, duration);
+            }
         }
 
         @Override

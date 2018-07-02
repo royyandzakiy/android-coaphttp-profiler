@@ -92,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
                         isProcessing = true;
 
                         countRequest = Integer.valueOf(nRequestsValue.getText().toString());
-                        //countRequestMinimumSuccess = countRequest- (int) Math.ceil(countRequest*countRequestErrorMargin);
-                        countRequestMinimumSuccess = countRequest-20;
+                        //countRequestMinimumSuccess = countRequest- (int) Math.floor(countRequest*countRequestErrorMargin);
+                        countRequestMinimumSuccess = countRequest;
 
                         sendRequest();
 
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         // Instantiate the RequestQueue.
 
         final ReqResData tempReqResData = new ReqResData();
-        tempReqResData.idRequest = idRequest;
+        tempReqResData.messageID = idRequest;
         JSONObject jsonBody=new JSONObject();
         try {
             jsonBody.put("id", idRequest);
@@ -294,8 +294,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void processResponse(final CoapResponse coapResponse, final URI serviceURI, final long duration) {
-        ReqResData temp = new ReqResData();
+        final ReqResData temp = new ReqResData();
+        temp.messageID = coapResponse.getMessageID();
         temp.duration = duration;
+        //temp.success = false;
         listReqResData.add(temp);
 
         runOnUiThread(new Runnable() {
@@ -314,10 +316,37 @@ public class MainActivity extends AppCompatActivity {
 
                 //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
-                Log.d("DEBUG::","MainAcitivty::processResponse::VARIABLES.coapResponse="+coapResponse.getContent().toString(CoapResponse.CHARSET));
+                Log.d("DEBUG::","MainAcitivty::processResponse::VARIABLES.getContent="+coapResponse.getContent().toString(CoapResponse.CHARSET));
+                Log.d("DEBUG::","MainAcitivty::processResponse{messageID("+coapResponse.getMessageID()+")}::VARIABLES.getMessageTypeName="+coapResponse.getMessageTypeName());
+                //temp.success = true;
+                //listReqResData.set(listReqResData.indexOf(temp), temp); // set bahwa pesan sukses
+
                 responseReceived(serviceURI, coapResponse);
             }
         });
+    }
+
+    public void processResponseFailed(final int idCoapRequest, final long duration) {
+        ReqResData temp = new ReqResData();
+        temp.duration = duration;
+        listReqResData.add(temp);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String text = duration + " ms";
+
+                Log.d("DEBUG::","MainAcitivty::processResponseFailed");
+                Log.d("DEBUG::","MainAcitivty::processResponse{messageID("+idCoapRequest+")}");
+                responseReceivedFailed();
+            }
+        });
+    }
+
+    public void responseReceivedFailed() {
+        if ((countSuccess + countFail) >= countRequestMinimumSuccess) {
+            requestDone();
+        }
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
@@ -326,6 +355,8 @@ public class MainActivity extends AppCompatActivity {
             requestDone();
         }
     }
+
+
 
     public int getCountSuccess() {
         return countSuccess;
