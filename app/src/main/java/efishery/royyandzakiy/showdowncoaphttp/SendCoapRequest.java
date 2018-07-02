@@ -223,7 +223,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
         public void sendCoapRequest() {
             if (activity.getCountFail() + activity.getCountSuccess() < activity.getCountRequest()) {
-                activity.sendCoapRequest(activity.getCountFail() + activity.getCountSuccess());
+                activity.sendRequest(activity.getCountFail() + activity.getCountSuccess());
             }
         }
 
