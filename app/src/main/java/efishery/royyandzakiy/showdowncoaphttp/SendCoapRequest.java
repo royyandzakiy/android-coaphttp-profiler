@@ -221,6 +221,12 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             this.observationCancelled = !observation;
         }
 
+        public void sendCoapRequest() {
+            if (activity.getCountFail() + activity.getCountSuccess() < activity.getCountRequest()) {
+                activity.sendCoapRequest(activity.getCountFail() + activity.getCountSuccess());
+            }
+        }
+
 
         @Override
         public void processCoapResponse(CoapResponse coapResponse) {
@@ -230,7 +236,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
-            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
+            sendCoapRequest();
         }
 
         @Override
@@ -241,7 +247,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
-            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
+            sendCoapRequest();
         }
 
         @Override
@@ -252,7 +258,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
-            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
+            sendCoapRequest();
         }
 
         @Override
@@ -287,7 +293,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             if (retransmissionCounter == 1) {
                 activity.setCountFail(activity.getCountFail() + 1);
                 activity.processResponseFailed(idCoapRequest, duration);
-                activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
+                sendCoapRequest();
             }
         }
 
@@ -298,7 +304,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processMiscellaneousError::description = " + description);
             //increment countFail
             activity.setCountFail(activity.getCountFail() + 1);
-            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
+            sendCoapRequest();
         }
 
         public void cancelObservation(){

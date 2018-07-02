@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private CoapClient clientApplication;
     private String type = "http";
     private boolean isProcessing = false;
-    private int countSuccess = 0, countFail = 0, countRequest = 130, countRequestMinimumSuccess;
+    private int countSuccess = 0, countFail = 0, countRequest;
     private double countRequestErrorMargin = 0.02;
     private float durasiAvg;
     private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
@@ -92,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
                         isProcessing = true;
 
                         countRequest = Integer.valueOf(nRequestsValue.getText().toString());
-                        //countRequestMinimumSuccess = countRequest- (int) Math.floor(countRequest*countRequestErrorMargin);
-                        countRequestMinimumSuccess = countRequest;
 
                         sendRequest(0);
 
@@ -152,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                         tempReqResData.success = true;
                         listReqResData.add(tempReqResData);
 
-                        if ((countFail + countSuccess) >= countRequestMinimumSuccess) {
+                        if ((countFail + countSuccess) >= countRequest) {
                             requestDone();
                         }
                     }
@@ -166,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 tempReqResData.success = false;
                 listReqResData.add(tempReqResData);
 
-                if ((countFail + countSuccess) >= countRequestMinimumSuccess) {
+                if ((countFail + countSuccess) >= countRequest) {
                     requestDone();
                 }
             }
@@ -233,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
         requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
 
         long duration = System.currentTimeMillis() - startTime;
-        if ((countFail + countSuccess) >= (countRequestMinimumSuccess) || duration > 60000) { // duration tidak pernah tertrigger
+        if ((countFail + countSuccess) >= (countRequest) || duration > 60000) { // duration tidak pernah tertrigger
             String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
             Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             status.setText("Response done!");
@@ -279,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
         packetLossValue = (TextView) findViewById(R.id.packetLossValue);
         requestTimeValue = (TextView) findViewById(R.id.requestTimeValue);
         nRequestsValue = (EditText) findViewById(R.id.nRequestValue);
-        nRequestsValue.setText(String.valueOf(countRequest));
 
         responseSuccessValue = (TextView) findViewById(R.id.responseSuccessValue);
         responseFailValue = (TextView) findViewById(R.id.responseFailValue);
@@ -331,19 +328,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void responseReceivedFailed() {
-        if ((countSuccess + countFail) >= countRequestMinimumSuccess) {
+        if ((countSuccess + countFail) >= countRequest) {
             requestDone();
         }
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail+";countRequestMinimumSuccess=" + countRequestMinimumSuccess);
-        if ((countSuccess + countFail) >= countRequestMinimumSuccess) {
+        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail+";countRequest=" + countRequest);
+        if ((countSuccess + countFail) >= countRequest) {
             requestDone();
         }
     }
 
 
+    public int getCountRequest() {
+        return countRequest;
+    }
 
     public int getCountSuccess() {
         return countSuccess;
