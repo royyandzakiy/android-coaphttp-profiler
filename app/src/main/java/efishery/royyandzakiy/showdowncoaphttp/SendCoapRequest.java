@@ -230,6 +230,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
+            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
         }
 
         @Override
@@ -240,6 +241,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
+            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
         }
 
         @Override
@@ -250,6 +252,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             //increment countSuccess
             activity.setCountSuccess(activity.getCountSuccess() + 1);
+            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
         }
 
         @Override
@@ -259,7 +262,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processTransmissionTimeout::duration " + duration + " ms");
 
             //increment countFail
-            //activity.setCountFail(activity.getCountFail() + 1);
+            activity.setCountFail(activity.getCountFail() + 1);
         }
 
         @Override
@@ -284,6 +287,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             if (retransmissionCounter == 1) {
                 activity.setCountFail(activity.getCountFail() + 1);
                 activity.processResponseFailed(idCoapRequest, duration);
+                activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
             }
         }
 
@@ -294,6 +298,7 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processMiscellaneousError::description = " + description);
             //increment countFail
             activity.setCountFail(activity.getCountFail() + 1);
+            activity.sendCoapRequest(activity.getCountSuccess() + activity.getCountFail());
         }
 
         public void cancelObservation(){

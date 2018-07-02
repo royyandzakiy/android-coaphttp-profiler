@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                         //countRequestMinimumSuccess = countRequest- (int) Math.floor(countRequest*countRequestErrorMargin);
                         countRequestMinimumSuccess = countRequest;
 
-                        sendRequest();
+                        sendRequest(0);
 
                         Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
                         status.setText("requesting...");
@@ -115,15 +115,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    protected void sendRequest() {
+    protected void sendRequest(int idRequest) {
         // loop send All Asynchronously
         startTime = System.currentTimeMillis();
-        for (int idRequest=0; idRequest<countRequest; idRequest++) {
-            if (type == "http") {
-                sendHttpRequest(idRequest);
-            } else if (type == "coap") {
-                sendCoapRequest(idRequest);
-            }
+        if (type == "http") {
+            sendHttpRequest(idRequest);
+        } else if (type == "coap") {
+            sendCoapRequest(idRequest);
         }
     }
 
@@ -148,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.response=" + response);
                         // Display response
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
+                        sendHttpRequest(countFail + countSuccess);
 
                         tempReqResData.duration = System.currentTimeMillis() - startTime;
                         tempReqResData.success = true;
@@ -161,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 responseFailValue.setText("Fail count: "+ ++countFail);
+                sendHttpRequest(countFail + countSuccess);
 
                 tempReqResData.duration = System.currentTimeMillis() - startTime;
                 tempReqResData.success = false;
@@ -303,23 +303,10 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                long block2Num = coapResponse.getBlock2Number(); // block2Num itu utk apa?
-                //String text = "Response received";
-                //if (block2Num != UintOptionValue.UNDEFINED) {
-                //    text += " (" + block2Num + " blocks in " + duration + " ms)";
-                //} else {
-                //    text += " (after " + duration + " ms)";
-                //}
-
                 String text = duration + " ms";
-                // totalRequestTimeValue.setText(text); // digunakan sementara, karena totalRequestTimeValue baru terisi setelah terpanggil requestDone()
-
-                //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
                 Log.d("DEBUG::","MainAcitivty::processResponse::VARIABLES.getContent="+coapResponse.getContent().toString(CoapResponse.CHARSET));
                 Log.d("DEBUG::","MainAcitivty::processResponse{messageID("+coapResponse.getMessageID()+")}::VARIABLES.getMessageTypeName="+coapResponse.getMessageTypeName());
-                //temp.success = true;
-                //listReqResData.set(listReqResData.indexOf(temp), temp); // set bahwa pesan sukses
 
                 responseReceived(serviceURI, coapResponse);
             }
