@@ -116,10 +116,14 @@ public class MainActivity extends AppCompatActivity {
 
     protected void sendRequest(int idRequest) {
         // loop send All Asynchronously
-        if (type == "http") {
-            sendHttpRequest(idRequest);
-        } else if (type == "coap") {
-            sendCoapRequest(idRequest);
+        if ((countFail + countSuccess) >= countRequest) {
+            requestDone();
+        } else {
+            if (type == "http") {
+                sendHttpRequest(idRequest);
+            } else if (type == "coap") {
+                sendCoapRequest(idRequest);
+            }
         }
     }
 
@@ -143,31 +147,24 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.response=" + response);
-                        // Display response
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
-                        sendRequest(countFail + countSuccess);
 
                         tempReqResData.duration = System.currentTimeMillis() - tempReqResData.startTime;
                         tempReqResData.success = true;
                         listReqResData.add(tempReqResData);
 
-                        if ((countFail + countSuccess) >= countRequest) {
-                            requestDone();
-                        }
+                        sendRequest(countFail + countSuccess);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 responseFailValue.setText("Fail count: "+ ++countFail);
-                sendRequest(countFail + countSuccess);
 
                 tempReqResData.duration = System.currentTimeMillis() - tempReqResData.startTime;
                 tempReqResData.success = false;
                 listReqResData.add(tempReqResData);
 
-                if ((countFail + countSuccess) >= countRequest) {
-                    requestDone();
-                }
+                sendRequest(countFail + countSuccess);
             }
         }) {
 
@@ -231,8 +228,7 @@ public class MainActivity extends AppCompatActivity {
         totalRequestTimeValue.setText(String.valueOf(elapsedTime) + " ms");
         requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
 
-        long duration = System.currentTimeMillis() - startTime;
-        if ((countFail + countSuccess) >= (countRequest) || duration > 60000) { // duration tidak pernah tertrigger
+        if ((countFail + countSuccess) >= (countRequest)) { // duration tidak pernah tertrigger
             String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
             Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             status.setText("Response done!");
@@ -360,5 +356,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void setCountFail(int _countFail) {
         countFail = _countFail;
+    }
+
+    public void incrementCountFail() {
+        ++countFail;
+    }
+
+    public void incrementCountSuccess() {
+        ++countSuccess;
     }
 }
