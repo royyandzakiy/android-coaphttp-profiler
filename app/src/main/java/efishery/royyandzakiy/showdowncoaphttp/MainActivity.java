@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
                         countRequest = Integer.valueOf(nRequestsValue.getText().toString());
 
+                        startTime = System.currentTimeMillis();
                         sendRequest(0);
 
                         Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
@@ -115,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
 
     protected void sendRequest(int idRequest) {
         // loop send All Asynchronously
-        startTime = System.currentTimeMillis();
         if (type == "http") {
             sendHttpRequest(idRequest);
         } else if (type == "coap") {
@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
         final ReqResData tempReqResData = new ReqResData();
         tempReqResData.messageID = idRequest;
+        tempReqResData.startTime = System.currentTimeMillis();
         JSONObject jsonBody=new JSONObject();
         try {
             jsonBody.put("id", idRequest);
@@ -144,9 +145,9 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.response=" + response);
                         // Display response
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
-                        sendHttpRequest(countFail + countSuccess);
+                        sendRequest(countFail + countSuccess);
 
-                        tempReqResData.duration = System.currentTimeMillis() - startTime;
+                        tempReqResData.duration = System.currentTimeMillis() - tempReqResData.startTime;
                         tempReqResData.success = true;
                         listReqResData.add(tempReqResData);
 
@@ -158,9 +159,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 responseFailValue.setText("Fail count: "+ ++countFail);
-                sendHttpRequest(countFail + countSuccess);
+                sendRequest(countFail + countSuccess);
 
-                tempReqResData.duration = System.currentTimeMillis() - startTime;
+                tempReqResData.duration = System.currentTimeMillis() - tempReqResData.startTime;
                 tempReqResData.success = false;
                 listReqResData.add(tempReqResData);
 
