@@ -1,4 +1,4 @@
-package efishery.royyandzakiy.showdowncoaphttp;
+package royyandzakiy.coaphttp.profiler;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private CoapClient clientApplication;
     private String type = "http";
     private boolean isProcessing = false;
-    private int countSuccess = 0, countFail = 0, countRequest = 130, countRequestMinimumSuccess;
+    private int countSuccess = 0, countFail = 0, countRequest;
     private double countRequestErrorMargin = 0.02;
     private float durasiAvg;
     private long durasiMax = -1, durasiMin = 9999999, durasiTotal = 0, durasiTemp;
@@ -92,10 +92,9 @@ public class MainActivity extends AppCompatActivity {
                         isProcessing = true;
 
                         countRequest = Integer.valueOf(nRequestsValue.getText().toString());
-                        //countRequestMinimumSuccess = countRequest- (int) Math.floor(countRequest*countRequestErrorMargin);
-                        countRequestMinimumSuccess = countRequest;
 
-                        sendRequest();
+                        startTime = System.currentTimeMillis();
+                        sendRequest(0);
 
                         Toast.makeText(getApplicationContext(), "requesting...", Toast.LENGTH_SHORT).show();
                         status.setText("requesting...");
@@ -115,10 +114,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    protected void sendRequest() {
+    protected void sendRequest(int idRequest) {
         // loop send All Asynchronously
-        startTime = System.currentTimeMillis();
-        for (int idRequest=0; idRequest<countRequest; idRequest++) {
+        if ((countFail + countSuccess) >= countRequest) {
+            requestDone();
+        } else {
             if (type == "http") {
                 sendHttpRequest(idRequest);
             } else if (type == "coap") {
@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         final ReqResData tempReqResData = new ReqResData();
         tempReqResData.messageID = idRequest;
+        tempReqResData.startTime = System.currentTimeMillis();
         JSONObject jsonBody=new JSONObject();
         try {
             jsonBody.put("id", idRequest);
@@ -146,29 +147,24 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("DEBUG::","MainActivity::sendHttpRequest::VARIABLES.response=" + response);
-                        // Display response
                         responseSuccessValue.setText("Success count: "+ ++countSuccess);
 
-                        tempReqResData.duration = System.currentTimeMillis() - startTime;
+                        tempReqResData.duration = System.currentTimeMillis() - tempReqResData.startTime;
                         tempReqResData.success = true;
                         listReqResData.add(tempReqResData);
 
-                        if ((countFail + countSuccess) >= countRequestMinimumSuccess) {
-                            requestDone();
-                        }
+                        sendRequest(countFail + countSuccess);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 responseFailValue.setText("Fail count: "+ ++countFail);
 
-                tempReqResData.duration = System.currentTimeMillis() - startTime;
+                tempReqResData.duration = System.currentTimeMillis() - tempReqResData.startTime;
                 tempReqResData.success = false;
                 listReqResData.add(tempReqResData);
 
-                if ((countFail + countSuccess) >= countRequestMinimumSuccess) {
-                    requestDone();
-                }
+                sendRequest(countFail + countSuccess);
             }
         }) {
 
@@ -219,22 +215,35 @@ public class MainActivity extends AppCompatActivity {
         durasiAvg = (float) durasiTotal / listReqResData.size();
 
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiTotal:"+ String.valueOf(durasiTotal));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiAvg:"+ String.valueOf(durasiAvg));
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiMax:"+ String.valueOf(durasiMax));
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiMin:"+ String.valueOf(durasiMin));
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.listReqResData:"+ String.valueOf(listReqResData.size()));
-        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiAvg:"+ String.valueOf(durasiAvg));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.countFail:"+ String.valueOf(countFail));
 
         //=== Change messages
-        String elapsedTime = String.valueOf(System.currentTimeMillis() - startTime);
 
-        totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + countRequest + " packets");
-        packetLossValue.setText(String.valueOf(countFail) + " packets");
-        totalRequestTimeValue.setText(String.valueOf(elapsedTime) + " ms");
-        requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
+        Log.d("DEBUG::","MainActivity::requestDone::setVariables_START");
 
-        long duration = System.currentTimeMillis() - startTime;
-        if ((countFail + countSuccess) >= (countRequestMinimumSuccess) || duration > 60000) { // duration tidak pernah tertrigger
-            String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
+        try {
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + String.valueOf(countRequest) + " packets");
+                    packetLossValue.setText(String.valueOf(countFail) + " packets");
+                    totalRequestTimeValue.setText(String.valueOf(durasiTotal) + " ms");
+                    requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.d("DEBUG::","MainActivity::requestDone::setVariables_FIN");
+
+        if ((countFail + countSuccess) >= (countRequest)) { // duration tidak pernah tertrigger
+            String toastText = String.valueOf(countFail + countSuccess) + " response done! " + String.valueOf(durasiTotal) + " ms";
             Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             status.setText("Response done!");
             resetVars();
@@ -279,7 +288,6 @@ public class MainActivity extends AppCompatActivity {
         packetLossValue = (TextView) findViewById(R.id.packetLossValue);
         requestTimeValue = (TextView) findViewById(R.id.requestTimeValue);
         nRequestsValue = (EditText) findViewById(R.id.nRequestValue);
-        nRequestsValue.setText(String.valueOf(countRequest));
 
         responseSuccessValue = (TextView) findViewById(R.id.responseSuccessValue);
         responseFailValue = (TextView) findViewById(R.id.responseFailValue);
@@ -303,23 +311,10 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                long block2Num = coapResponse.getBlock2Number(); // block2Num itu utk apa?
-                //String text = "Response received";
-                //if (block2Num != UintOptionValue.UNDEFINED) {
-                //    text += " (" + block2Num + " blocks in " + duration + " ms)";
-                //} else {
-                //    text += " (after " + duration + " ms)";
-                //}
-
                 String text = duration + " ms";
-                // totalRequestTimeValue.setText(text); // digunakan sementara, karena totalRequestTimeValue baru terisi setelah terpanggil requestDone()
-
-                //Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
                 Log.d("DEBUG::","MainAcitivty::processResponse::VARIABLES.getContent="+coapResponse.getContent().toString(CoapResponse.CHARSET));
                 Log.d("DEBUG::","MainAcitivty::processResponse{messageID("+coapResponse.getMessageID()+")}::VARIABLES.getMessageTypeName="+coapResponse.getMessageTypeName());
-                //temp.success = true;
-                //listReqResData.set(listReqResData.indexOf(temp), temp); // set bahwa pesan sukses
 
                 responseReceived(serviceURI, coapResponse);
             }
@@ -328,6 +323,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void processResponseFailed(final int idCoapRequest, final long duration) {
         ReqResData temp = new ReqResData();
+        temp.messageID = idCoapRequest;
         temp.duration = duration;
         listReqResData.add(temp);
 
@@ -344,19 +340,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void responseReceivedFailed() {
-        if ((countSuccess + countFail) >= countRequestMinimumSuccess) {
-            requestDone();
-        }
+        // do nothing...
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail+";countRequestMinimumSuccess=" + countRequestMinimumSuccess);
-        if ((countSuccess + countFail) >= countRequestMinimumSuccess) {
-            requestDone();
-        }
+        // do nothing...
     }
 
 
+    public int getCountRequest() {
+        return countRequest;
+    }
 
     public int getCountSuccess() {
         return countSuccess;
@@ -372,5 +366,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void setCountFail(int _countFail) {
         countFail = _countFail;
+    }
+
+    public void incrementCountFail() {
+        ++countFail;
+    }
+
+    public void incrementCountSuccess() {
+        ++countSuccess;
     }
 }

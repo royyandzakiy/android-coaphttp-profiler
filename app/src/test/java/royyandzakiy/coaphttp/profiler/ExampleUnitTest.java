@@ -1,4 +1,4 @@
-package efishery.royyandzakiy.showdowncoaphttp;
+package royyandzakiy.coaphttp.profiler;
 
 import org.junit.Test;
 

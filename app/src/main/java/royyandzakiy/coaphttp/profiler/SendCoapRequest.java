@@ -1,6 +1,5 @@
-package efishery.royyandzakiy.showdowncoaphttp;
+package royyandzakiy.coaphttp.profiler;
 
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
@@ -221,6 +220,11 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             this.observationCancelled = !observation;
         }
 
+        public void sendCoapRequest(int _idCoapRequest) {
+            int idCoapReqSend = (_idCoapRequest > 0) ? _idCoapRequest : (activity.getCountFail() + activity.getCountSuccess());
+            activity.sendRequest(idCoapReqSend);
+        }
+
 
         @Override
         public void processCoapResponse(CoapResponse coapResponse) {
@@ -229,17 +233,19 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             activity.processResponse(coapResponse, this.serviceURI, duration);
 
             //increment countSuccess
-            activity.setCountSuccess(activity.getCountSuccess() + 1);
+            activity.incrementCountSuccess();
+            sendCoapRequest(0);
         }
 
         @Override
         public void processEmptyAcknowledgement(){
-            showLongToast("Empty ACK received!");
+//            showLongToast("Empty ACK received!");
             long duration = System.currentTimeMillis() - startTime;
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processEmptyAcknowledgement::duration " + duration + " ms");
 
             //increment countSuccess
-            activity.setCountSuccess(activity.getCountSuccess() + 1);
+//            activity.incrementCountSuccess();
+            sendCoapRequest(idCoapRequest);
         }
 
         @Override
@@ -249,7 +255,8 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processReset::duration " + duration + " ms");
 
             //increment countSuccess
-            activity.setCountSuccess(activity.getCountSuccess() + 1);
+//            activity.incrementCountSuccess();
+            sendCoapRequest(idCoapRequest);
         }
 
         @Override
@@ -259,7 +266,9 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processTransmissionTimeout::duration " + duration + " ms");
 
             //increment countFail
-            //activity.setCountFail(activity.getCountFail() + 1);
+            activity.incrementCountFail();
+            activity.processResponseFailed(idCoapRequest, duration);
+            sendCoapRequest(0);
         }
 
         @Override
@@ -281,10 +290,11 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
             long duration = System.currentTimeMillis() - startTime;
             //showLongToast("Retransmission No. " + (retransmissionCounter));
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processRetransmission::Retransmission No. " + retransmissionCounter);
-            if (retransmissionCounter == 1) {
-                activity.setCountFail(activity.getCountFail() + 1);
-                activity.processResponseFailed(idCoapRequest, duration);
-            }
+//            if (retransmissionCounter == 1) {
+//                activity.incrementCountFail();
+//                activity.processResponseFailed(idCoapRequest, duration);
+//                sendCoapRequest(0);
+//            }
         }
 
         @Override
@@ -293,7 +303,8 @@ public class SendCoapRequest extends AsyncTask<Long, Void, SendCoapRequest.Spitf
 
             Log.d("DEBUG::","SendCoapRequest::idCoapRequest("+idCoapRequest+")::processMiscellaneousError::description = " + description);
             //increment countFail
-            activity.setCountFail(activity.getCountFail() + 1);
+            activity.incrementCountFail();
+            sendCoapRequest(0);
         }
 
         public void cancelObservation(){
