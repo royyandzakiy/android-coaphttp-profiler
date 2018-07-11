@@ -1,4 +1,4 @@
-package efishery.royyandzakiy.showdowncoaphttp;
+package royyandzakiy.coaphttp.profiler;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

@@ -1,4 +1,4 @@
-package efishery.royyandzakiy.showdowncoaphttp;
+package royyandzakiy.coaphttp.profiler;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -215,21 +215,21 @@ public class MainActivity extends AppCompatActivity {
         durasiAvg = (float) durasiTotal / listReqResData.size();
 
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiTotal:"+ String.valueOf(durasiTotal));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiAvg:"+ String.valueOf(durasiAvg));
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiMax:"+ String.valueOf(durasiMax));
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiMin:"+ String.valueOf(durasiMin));
         Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.listReqResData:"+ String.valueOf(listReqResData.size()));
-        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.durasiAvg:"+ String.valueOf(durasiAvg));
+        Log.d("DEBUG::","MainActivity::requestDone::VARIABLES.countFail:"+ String.valueOf(countFail));
 
         //=== Change messages
-        String elapsedTime = String.valueOf(System.currentTimeMillis() - startTime);
 
-        totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + countRequest + " packets");
+        totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + String.valueOf(countRequest) + " packets");
         packetLossValue.setText(String.valueOf(countFail) + " packets");
-        totalRequestTimeValue.setText(String.valueOf(elapsedTime) + " ms");
+        totalRequestTimeValue.setText(String.valueOf(durasiTotal) + " ms");
         requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
 
         if ((countFail + countSuccess) >= (countRequest)) { // duration tidak pernah tertrigger
-            String toastText = (countFail + countSuccess) + " response done! " + elapsedTime  + " ms";
+            String toastText = String.valueOf(countFail + countSuccess) + " response done! " + String.valueOf(durasiTotal) + " ms";
             Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             status.setText("Response done!");
             resetVars();
@@ -309,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void processResponseFailed(final int idCoapRequest, final long duration) {
         ReqResData temp = new ReqResData();
+        temp.messageID = idCoapRequest;
         temp.duration = duration;
         listReqResData.add(temp);
 
@@ -325,16 +326,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void responseReceivedFailed() {
-        if ((countSuccess + countFail) >= countRequest) {
-            requestDone();
-        }
+        // do nothing...
     }
 
     public void responseReceived(URI uri, CoapResponse coapResponse){
-        Log.d("DEBUG::","MainActivity::responseReceived::countTotal="+(countSuccess+countFail)+";countSuccess="+countSuccess+";countFail="+countFail+";countRequest=" + countRequest);
-        if ((countSuccess + countFail) >= countRequest) {
-            requestDone();
-        }
+        // do nothing...
     }
 
 

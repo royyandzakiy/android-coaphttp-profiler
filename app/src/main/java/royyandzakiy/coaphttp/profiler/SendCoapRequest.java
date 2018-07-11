@@ -1,6 +1,5 @@
-package efishery.royyandzakiy.showdowncoaphttp;
+package royyandzakiy.coaphttp.profiler;
 
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
