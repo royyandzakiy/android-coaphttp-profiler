@@ -223,10 +223,24 @@ public class MainActivity extends AppCompatActivity {
 
         //=== Change messages
 
-        totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + String.valueOf(countRequest) + " packets");
-        packetLossValue.setText(String.valueOf(countFail) + " packets");
-        totalRequestTimeValue.setText(String.valueOf(durasiTotal) + " ms");
-        requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
+        Log.d("DEBUG::","MainActivity::requestDone::setVariables_START");
+
+        try {
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    totalRequestValue.setText(String.valueOf(countFail + countSuccess) + " / " + String.valueOf(countRequest) + " packets");
+                    packetLossValue.setText(String.valueOf(countFail) + " packets");
+                    totalRequestTimeValue.setText(String.valueOf(durasiTotal) + " ms");
+                    requestTimeValue.setText(String.valueOf(durasiAvg) + " / " + String.valueOf(durasiMax) + " / " + String.valueOf(durasiMin) + " ms"); // hitung AVG/MAX/MIN
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.d("DEBUG::","MainActivity::requestDone::setVariables_FIN");
 
         if ((countFail + countSuccess) >= (countRequest)) { // duration tidak pernah tertrigger
             String toastText = String.valueOf(countFail + countSuccess) + " response done! " + String.valueOf(durasiTotal) + " ms";
